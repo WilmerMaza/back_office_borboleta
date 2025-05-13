@@ -1,0 +1,47 @@
+# ⛔ Directorios de compilación Angular
+/dist/
+/dist-ssr/
+/out-tsc/
+/.angular/
+/.angular/cache/
+
+# ⛔ Dependencias
+/node_modules/
+
+# ⚙️ Archivos de configuración local
+/.env
+/.env.*.local
+*.local
+*.env
+
+# 🧪 Cobertura de tests
+/coverage/
+
+# 🔐 Archivos de seguridad y lockfiles opcionales
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 🗂️ IDEs y editores
+.vscode/
+.idea/
+*.sw?
+
+# 💻 Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# ⚡ Firebase SSR
+/functions/node_modules/
+/firebase-debug.log
+
+# 🚫 Archivos generados automáticamente
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ⚠️ Archivos de configuración específicos que NO quieres subir
+/public/assets/data/settings.json
+/src/environments/environment.*.ts
+/src/environments/environment.ts
