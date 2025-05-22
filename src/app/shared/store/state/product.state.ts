@@ -49,7 +49,7 @@ export class ProductState {
       return { label: res?.name, value: res?.id, data: {
         type: res.type,
         name: res.name,
-        slug: res.slug,
+      
         stock_status: res.stock_status,
         image: res.product_thumbnail ? res.product_thumbnail.original_url : 'assets/images/product.png'
       }}
@@ -95,27 +95,35 @@ export class ProductState {
     return this.productService.getProducts(action.payload).pipe(
       tap({
         next: (result: ProductModel) => {
-          let paginateProduct
-          if(action.payload!['page'] && action.payload!['paginate']) {
-            paginateProduct = result.data.map((product) => ({ ...product })).slice(
-              (action.payload!['page'] - 1) * action.payload!['paginate'],
-              (action.payload!['page']- 1) * action.payload!['paginate'] + action.payload!['paginate'],
-            );
-          } else {
-            paginateProduct = result.data;
-          }
+          try {
+            let paginateProduct = action.payload!['page'] && action.payload!['paginate']
+              ? result.data.map((product) => ({ ...product })).slice(
+                  (action.payload!['page'] - 1) * action.payload!['paginate'],
+                  (action.payload!['page']- 1) * action.payload!['paginate'] + action.payload!['paginate'],
+                )
+              : result.data;
 
-          if(action?.payload!['top_selling']) {
-            const state = ctx.getState();
-            ctx.patchState({
-              ...state,
-              topSellingProducts: paginateProduct
-            });
-          } else {
+            if(action?.payload!['top_selling']) {
+              const state = ctx.getState();
+              ctx.patchState({
+                ...state,
+                topSellingProducts: paginateProduct
+              });
+            } else {
+              ctx.patchState({
+                product: {
+                  data: paginateProduct || [],
+                  total: result?.total ? result?.total : paginateProduct?.length || 0
+                }
+              });
+            }
+          } catch (error) {
+            this.notificationService.showError('Error al procesar los datos del producto');
+            console.error('Error al procesar datos:', error);
             ctx.patchState({
               product: {
-                data: paginateProduct,
-                total: result?.total ? result?.total : paginateProduct?.length
+                data: [],
+                total: 0
               }
             });
           }
@@ -128,8 +136,20 @@ export class ProductState {
   }
 
   @Action(CreateProduct)
-  create(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
-    // Create Product Logic Here
+  create(ctx: StateContext<ProductStateModel>, { payload }: CreateProduct) {
+    console.log('Parámetros enviados al crear producto:', payload);
+    return this.productService.createProduct(payload).pipe(
+      tap({
+        next: () => {
+          this.notificationService.showSuccess('Producto creado exitosamente');
+          ctx.dispatch(new GetProducts({}));
+        },
+        error: (err) => {
+          this.notificationService.showError('Error al crear el producto');
+          console.error('Error de API:', err);
+        }
+      })
+    );
   }
 
   @Action(EditProduct)

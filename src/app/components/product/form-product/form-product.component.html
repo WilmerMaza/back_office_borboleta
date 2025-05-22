@@ -8,7 +8,7 @@
             <ng-template ngbNavContent>
               <div class="tab" tab="general">
                 @if(type == 'create'){
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'product_type'" [for]="'product_type'" [required]="true">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'product_type'" [for]="'product_type'" >
                     @if(isBrowser) {
                     <select2 class="custom-select"
                       [placeholder]="'select_product_type' | translate"
@@ -27,7 +27,7 @@
                 }
 
                 @if((setting$ | async)?.activation?.multivendor && ((user$ | async)?.role?.name === 'admin')){
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'store'" [for]="'store'" [required]="true">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'store'" [for]="'store'" >
                     @if(isBrowser) {
                     <select2 class="custom-select"
                       [placeholder]="'select_store' | translate"
@@ -45,7 +45,7 @@
                     }
                   </app-form-fields>
                 }
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'name'" [for]="'name'" [required]="true">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'name'" [for]="'name'" >
                   <input class="form-control" id="name" type="text" placeholder="{{ 'enter_product_name' | translate }}" formControlName="name">
                   @if(form.controls['name'].touched && form.controls['name'].errors?.['required']){
                     <div class="invalid-feedback">
@@ -53,7 +53,7 @@
                     </div>
                   }
                 </app-form-fields>
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'short_description'" [for]="'short_description'" [required]="true">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'short_description'" [for]="'short_description'" >
                   <textarea class="form-control" id="sort_description" placeholder="{{ 'enter_short_description' | translate }}" rows="3" formControlName="short_description"></textarea>
                   <p class="help-text">{{ '*Maximum length should be 300 characters.' }}</p>
                   @if(form.controls['short_description'].touched && form.controls['short_description'].errors?.['required']){
@@ -62,7 +62,7 @@
                     </div>
                   }
                 </app-form-fields>
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'description'" [for]="'description'" [required]="true">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'description'" [for]="'description'" >
                   <div class="custom-editor editor-checkbox">
                     <div class="form-check form-switch">
                       <input class="form-check-input" id="ckcheck" type="checkbox" name="isCodeEditor" [(ngModel)]="isCodeEditor" [ngModelOptions]="{standalone: true}">
@@ -92,7 +92,7 @@
                     }
                   </div>
                 </app-form-fields>
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'tax'" [for]="'tax'" [required]="true">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'tax'" [for]="'tax'" >
                   @if(isBrowser) {
                   <select2 class="custom-select"
                     [placeholder]="'select_tax' | translate "
@@ -121,7 +121,7 @@
                   [gridClass]="'col-sm-9'"
                   [label]="'thumbnail'"
                   [for]="'product_thumbnail_id'"
-                  [required]="false">
+                  >
 
                   <app-image-upload
                     [multipleImage]="false"
@@ -131,6 +131,11 @@
                     (selectedFiles)="selectThumbnail($event)">
                   </app-image-upload>
 
+                  @if(form.controls['product_thumbnail_id'].touched && form.controls['product_thumbnail_id'].errors?.['required']){
+                    <div class="invalid-feedback">
+                      {{ 'thumbnail_is_required' | translate }}
+                    </div>
+                  }
                 </app-form-fields>
 
                 <app-form-fields
@@ -183,7 +188,7 @@
                     [gridClass]="'col-sm-9'"
                     [label]="'watermark_position'"
                     [for]="'watermark_postion'"
-                     [required]="true">
+                     >
 
                     @if(isBrowser) {
                      <select2 class="custom-select"
@@ -208,7 +213,7 @@
                     [gridClass]="'col-sm-9'"
                     [label]="'Watermark_image'"
                     [for]="'Watermark_image'"
-                    [required]="true">
+                    >
 
                     <app-image-upload
                       [multipleImage]="false"
@@ -239,7 +244,7 @@
                     [gridClass]="'col-sm-9'"
                     [label]="'type'"
                     [for]="'type'"
-                    [required]="true">
+                    >
 
                     @if(isBrowser) {
                     <select2 class="custom-select"
@@ -264,7 +269,7 @@
                     [gridClass]="'col-sm-9'"
                     [label]="'external_url'"
                     [for]="'external_url'"
-                    [required]="true">
+                    >
                     <input class="form-control" id="external_url" type="url" placeholder="{{ 'enter_external_url' | translate }}" formControlName="external_url">
 
                     @if(form.controls['external_url'].touched && form.controls['external_url'].errors?.['required']){
@@ -290,7 +295,7 @@
                   [gridClass]="'col-sm-9'"
                   [label]="'stock_status'"
                   [for]="'stock_status'"
-                  [required]="true">
+                  >
 
                   @if(isBrowser) {
                   <select2 class="custom-select"
@@ -313,7 +318,7 @@
                   [gridClass]="'col-sm-9'"
                   [label]="'sku'"
                   [for]="'sku'"
-                  [required]="true">
+                  >
 
                   <input class="form-control" id="sku" type="text" placeholder="{{ 'enter_sku' | translate }}" formControlName="sku">
 
@@ -329,7 +334,7 @@
                   [gridClass]="'col-sm-9'"
                   [label]="'stock_quantity'"
                   [for]="'quantity'"
-                  [required]="true">
+                  >
 
                   <input class="form-control" id="quantity" type="number" placeholder="{{ 'enter_quantity' | translate }}" formControlName="quantity">
 
@@ -346,7 +351,7 @@
                     [gridClass]="'col-sm-9'"
                     [label]="'price'"
                     [for]="'price'"
-                    [required]="true">
+                    >
 
                     <div class="input-group">
                       <span class="input-group-text">
@@ -581,7 +586,7 @@
                                         [gridClass]="'col-sm-9'"
                                         [label]="'name' | translate"
                                         [for]="'variation_name'+i"
-                                        [required]="true">
+                                        >
 
                                         <input class="form-control" [id]="'variation_name'+i" type="text" placeholder="{{'enter_name' | translate}}" formControlName="name">
 
@@ -597,7 +602,7 @@
                                         [gridClass]="'col-sm-9'"
                                         [label]="'Price'"
                                         [for]="'price'+i"
-                                        [required]="true">
+                                        >
 
                                         <div class="input-group">
                                           <span class="input-group-text">
@@ -652,7 +657,7 @@
                                         [gridClass]="'col-sm-9'"
                                         [label]="'stock_quantity' | translate"
                                         [for]="'quantity'+i"
-                                        [required]="true">
+                                        >
 
                                         <input class="form-control" [id]="'quantity'+i" type="number" placeholder="{{'enter_quantity' | translate}}" formControlName="quantity">
 
@@ -668,7 +673,7 @@
                                         [gridClass]="'col-sm-9'"
                                         [label]="'sku'"
                                         [for]="'sku'+i"
-                                        [required]="true">
+                                        >
 
                                         <input class="form-control" [id]="'sku'+i" type="text" placeholder="{{'enter_sku' | translate}}" formControlName="sku">
 
@@ -684,7 +689,7 @@
                                         [gridClass]="'col-sm-9'"
                                         [label]="'stock_status'"
                                         [for]="'stock_status'+i"
-                                        [required]="true">
+                                        >
 
                                         @if(isBrowser) {
                                         <select2 class="custom-select"
@@ -775,7 +780,7 @@
                                               [gridClass]="'col-sm-9'"
                                               [label]="'separator'"
                                               [for]="'separator'+i"
-                                              [required]="true">
+                                              >
 
                                               @if(isBrowser) {
                                               <select2 class="custom-select d-block"
@@ -798,7 +803,7 @@
                                               [gridClass]="'col-sm-9'"
                                               [label]="'license_key' | translate"
                                               [for]="'license_key'+i"
-                                              [required]="true">
+                                              >
 
                                               <textarea class="form-control" placeholder="{{'enter_license_key' | translate }}" formControlName="license_keys" rows="3"></textarea>
 
@@ -866,7 +871,7 @@
                         <app-form-fields
                           [labelClass]="'form-label-title col-sm-3 mb-0'"
                           [gridClass]="'col-sm-9'"
-                          [label]="'is_licensekey_auto'" [for]="'is_licensekey_auto'" [required]="false">
+                          [label]="'is_licensekey_auto'" [for]="'is_licensekey_auto'" >
                           <div class="form-check form-switch ps-0">
                             <label class="switch">
                               <input type="checkbox" id="is_licensekey_auto" formControlName="is_licensekey_auto">
@@ -877,7 +882,7 @@
                       }
 
                       @if(!form.controls['is_licensekey_auto']?.value){
-                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'separator'" [for]="'separator'" [required]="true">
+                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'separator'" [for]="'separator'" >
                           @if(isBrowser) {
                           <select2 class="custom-select d-block" [data]="separators.length ? separators : []" [placeholder]="'select_separator' | translate" formControlName="separator" id="separator" noResultMessage="{{ 'no_data_found' | translate }}">
                           </select2>
@@ -890,7 +895,7 @@
                           }
                         </app-form-fields>
 
-                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'license_key' | translate" [for]="'license_key'" [required]="true">
+                        <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'license_key' | translate" [for]="'license_key'" >
                           <textarea class="form-control" placeholder="{{'enter_license_key' | translate }}" formControlName="license_key" rows="3"></textarea>
                           @if(form.controls['license_key'].touched && form.controls['license_key'].errors?.['required']){
                             <div class="invalid-feedback">
@@ -902,7 +907,7 @@
                     }
                   }
 
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'preview_type'" [for]="'preview_type'" [required]="true">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'preview_type'" [for]="'preview_type'" >
                     @if(isBrowser) {
                     <select2 class="custom-select d-block" [data]="previewType.length ? previewType : []" [placeholder]="'select_preview_type' | translate" formControlName="preview_type" id="preview_type" noResultMessage="{{ 'no_data_found' | translate }}">
                     </select2>
@@ -974,9 +979,10 @@
                     }
                   </app-form-fields>
 
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'sale_end_date'" [for]="'sale_expired_at'" [required]="false">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'sale_end_date'" [for]="'sale_expired_at'" >
                     <div class="input-group custom-dt-picker">
                       <input #dpToDate class="form-control" placeholder="{{'yyyy-mm-dd' | translate}}" name="dpToDate" [value]="formatter.format(toDate)" (input)="toDate = validateInput(toDate, dpToDate.value)" readonly />
+
                       <button class="btn btn-light-bg-secondary" (click)="datepicker.toggle()" type="button">
                         <i class="ri-calendar-line"></i>
                       </button>
@@ -991,13 +997,24 @@
                 </div>
 
                 @if(form.controls['product_type']?.value != 'digital'){
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'unit'" [for]="'unit'" [required]="false">
+                  <app-form-fields
+                  [labelClass]="'form-label-title col-sm-3 mb-0'"
+                  [gridClass]="'col-sm-9'"
+                  [label]="'unit'"
+                  [for]="'unit'"
+                  >
                     <input class="form-control" id="unit" type="text" placeholder="{{ 'enter_unit' | translate }}" formControlName="unit">
                     <p class="help-text">{{ '*Specify the measurement unit, such as 10 Pieces, 1 KG, 1 Ltr, etc.' }}</p>
+                    
+                    @if(form.controls['unit'].touched && form.controls['unit'].errors?.['required']){
+                      <div class="invalid-feedback">
+                        {{ 'unit_is_required' | translate }}
+                      </div>
+                    }
                   </app-form-fields>
                 }
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'tags'" [for]="'tags'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'tags'" [for]="'tags'" >
                   <app-advance-dropdown
                     [position]="'bottom'"
                     [selectedOption]="selectedTags"
@@ -1006,7 +1023,7 @@
                   </app-advance-dropdown>
                 </app-form-fields>
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'categories'" [for]="'categories'" [required]="true">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'categories'" [for]="'categories'" >
                   <app-advance-dropdown
                     [position]="'bottom'"
                     [selectedOption]="selectedCategories"
@@ -1023,14 +1040,14 @@
                   }
                 </app-form-fields>
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'brand'" [for]="'brand_id'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'brand'" [for]="'brand_id'">
                   @if(isBrowser) {
                   <select2 class="custom-select" [placeholder]="'select_brand' | translate" [data]="(brand$ | async)?.length ? (brand$ | async) : []" formControlName="brand_id" noResultMessage="{{ 'no_data_found' | translate }}" id="brand" resettable>
                   </select2>
                 }
                 </app-form-fields>
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'random_related_product'" [for]="'is_random_related_products'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'random_related_product'" [for]="'is_random_related_products'" >
                   <div class="form-check form-switch ps-0">
                     <label class="switch">
                       <input type="checkbox" id="is_random_related_products" formControlName="is_random_related_products">
@@ -1041,7 +1058,7 @@
                 </app-form-fields>
 
                 @if(!form.get('is_random_related_products')?.value){
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'related_products' | translate" [for]="'related_product_id'" [required]="false">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'related_products' | translate" [for]="'related_product_id'" >
                     @if(isBrowser) {
                     <select2 class="custom-select" [templates]="template" [data]="(products$ | async)?.length ? (products$ | async) : []" [placeholder]="'select_product' | translate " formControlName="related_products" noResultMessage="{{'no_data_found' | translate }}" [customSearchEnabled]="true" (close)="productDropdown($event)" (search)="searchProduct($event)" multiple="true" resettable>
                       <ng-template #template let-data="data">
@@ -1057,7 +1074,7 @@
                 }
 
                 @if(form.controls['product_type']?.value == 'physical'){
-                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'cross_sell_products'" [for]="'cross_sell_products'" [required]="false">
+                  <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'cross_sell_products'" [for]="'cross_sell_products'">
                     @if(isBrowser) {
                     <select2 class="custom-select" [templates]="template" [data]="collectionProduct?.length ? collectionProduct : []" [placeholder]="'select_product' | translate" formControlName="cross_sell_products" noResultMessage="{{ 'no_data_found' | translate }}" [customSearchEnabled]="true" (close)="productDropdown($event)" (search)="searchProduct($event)" [multiple]="true">
                       <ng-template #template let-data="data">
@@ -1080,15 +1097,15 @@
             <ng-template ngbNavContent>
               <div class="tab" tab="seo">
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_title'" [for]="'meta_title'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_title'" [for]="'meta_title'" >
                   <input class="form-control" id="meta_title" type="text" placeholder="{{'enter_meta_title' | translate }}" formControlName="meta_title">
                 </app-form-fields>
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_description'" [for]="'meta_desc'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_description'" [for]="'meta_desc'" >
                   <textarea class="form-control" id="meta_desc" placeholder="{{ 'enter_meta_description' | translate }}" rows="3" formControlName="meta_description"></textarea>
                 </app-form-fields>
 
-                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_image'" [for]="'meta_image'" [required]="false">
+                <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'meta_image'" [for]="'meta_image'" >
                   <app-image-upload [multipleImage]="false" [accept]="[mediaConfig.image]" [image]="(product$ | async)?.product_meta_image" (selectedFiles)="selectMetaImage($event)">
                   </app-image-upload>
                 </app-form-fields>
