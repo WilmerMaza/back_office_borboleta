@@ -17,7 +17,7 @@ export class ProductService {
   }
 
   getProducts(payload?: Params): Observable<ProductModel> {
-    return this.http.get<ProductModel>(`${environment.URLS}/`, { params: payload })
+    return this.http.get<ProductModel>(`${environment.URLS}/products`, { params: payload })
       .pipe(
         catchError(this.handleError)
       );
