@@ -104,6 +104,15 @@ export class TableComponent {
     });
     this.user$.subscribe(user => this.role = user?.role?.name);
 
+    // Asegurar que cada fila tenga un ID único
+    if (this.tableConfig?.data) {
+      this.tableConfig.data = this.tableConfig.data.map((item: any, index: number) => {
+        if (!item.id) {
+          item.id = `temp_${index}`;
+        }
+        return item;
+      });
+    }
   }
 
   checkIsCanAllow() {

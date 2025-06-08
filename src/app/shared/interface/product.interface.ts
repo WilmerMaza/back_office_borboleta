@@ -160,7 +160,7 @@ export interface VariationOption {
 
 export interface Variant {
     id: number | null;
-    attribute_values: number[] | null;
+    attribute_values: AttributeValue[] | null;
     options: any;
     variant_option: any;
 }

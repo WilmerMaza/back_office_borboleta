@@ -37,6 +37,10 @@ import { ImageUploadComponent } from '../../../shared/components/ui/image-upload
 import { ButtonComponent } from '../../../shared/components/ui/button/button.component';
 import { AdvanceDropdownComponent } from '../../../shared/components/ui/advance-dropdown/advance-dropdown.component';
 
+import { ToastrService } from 'ngx-toastr';
+import { ProductService } from 'src/app/shared/services/product.service';
+
+
 function convertToNgbDate(date: NgbDateStruct): NgbDate {
   return new NgbDate(date.year, date.month, date.day);
 }
@@ -52,6 +56,39 @@ function convertToNgbDate(date: NgbDateStruct): NgbDate {
     styleUrl: './form-product.component.scss'
 })
 export class FormProductComponent {
+  createProduct() {
+    const formData = this.form.value;
+    const productData: any = {};
+
+    for (const key in formData) {
+      if (formData[key] !== null && formData[key] !== '' && !(Array.isArray(formData[key]) && formData[key].length === 0)) {
+        productData[key] = formData[key];
+      }
+    }
+
+    if (formData.galleryIds) {
+      productData.product_galleries_id = formData.galleryIds;
+    }
+    if (formData.sizeChartId) {
+      productData.size_chart_image_id = formData.sizeChartId;
+    }
+    if (formData.watermarkImageId) {
+      productData.watermark_image_id = formData.watermarkImageId;
+    }
+
+    this.store.dispatch(new CreateProduct(productData)).subscribe({
+      next: () => {
+        this.toastr.success('Producto creado exitosamente');
+        this.router.navigate(['/product']);
+      },
+      error: (error) => {
+        this.toastr.error('Error al crear el producto');
+        console.error('Error:', error);
+      }
+    });
+  }
+  
+  
 
   @Input() type: string;
 
@@ -193,15 +230,19 @@ export class FormProductComponent {
   public isBrowser: boolean;
   private search = new Subject<string>();
   public textArea = new FormControl('');
-  constructor(private store: Store,
+  constructor(
+    private store: Store,
     private route: ActivatedRoute,
     private router: Router,
     private formBuilder: FormBuilder,
     private calendar: NgbCalendar,
     public formatter: NgbDateParserFormatter,
     private renderer: Renderer2,
+    private toastr: ToastrService,
+    private productService: ProductService,
     @Inject(PLATFORM_ID) private platformId: object,
-    @Inject(DOCUMENT) private document: Document) {
+    @Inject(DOCUMENT) private document: Document
+) {
     this.isBrowser = isPlatformBrowser(platformId);
     this.store.dispatch(new GetStores({status: 1, is_approved: 1}));
     this.store.dispatch(new GetAttributes({status: 1}));
@@ -215,67 +256,67 @@ export class FormProductComponent {
                         .pipe(map(filterFn => filterFn('')));
 
     this.form = this.formBuilder.group({
-      product_type: new FormControl('physical', [Validators.required]),
-      name: new FormControl('', [Validators.required]),
-      short_description: new FormControl('', [Validators.required]),
-      description: new FormControl('', [Validators.required]),
-      store_id: new FormControl(),
-      type: new FormControl('simple', [Validators.required]),
-      digital_file_ids: new FormControl(),
-      preview_type: new FormControl('url'),
-      preview_audio_file_id: new FormControl(),
-      preview_video_file_id: new FormControl(),
-      is_licensable: new FormControl(0),
-      is_licensekey_auto: new FormControl(0),
-      license_key: new FormControl(),
-      separator: new FormControl(),
-      preview_url: new FormControl(),
-      is_external: new FormControl(0),
-      external_url: new FormControl(),
-      external_button_text: new FormControl(),
-      unit: new FormControl(),
-      weight: new FormControl(),
-      stock_status: new FormControl('in_stock', []),
-      sku: new FormControl('', [Validators.required]),
-      quantity: new FormControl('', [Validators.required]),
-      price: new FormControl('', [Validators.required, priceValidator]),
-      discount: new FormControl(),
-      wholesale_price_type: new FormControl(),
-      wholesale_prices:  this.formBuilder.array([], []),
-      is_sale_enable: new FormControl(0),
-      sale_starts_at: new FormControl(),
-      sale_expired_at: new FormControl(),
-      tags: new FormControl(),
-      categories: new FormControl('', [Validators.required]),
-      brand_id: new FormControl(''),
-      is_random_related_products: new FormControl(0),
-      related_products: new FormControl(),
-      cross_sell_products: new FormControl([]),
-      product_thumbnail_id: new FormControl(),
-      watermark: new FormControl(0),
-      watermark_position: new FormControl('center'),
-      watermark_image_id: new FormControl(),
-      product_galleries_id: new FormControl(),
-      size_chart_image_id: new FormControl(),
-      variants: this.formBuilder.array([], []),
-      variations: this.formBuilder.array([], []),
-      attributes_ids: new FormControl([]),
-      meta_title: new FormControl(),
-      meta_description: new FormControl(),
-      product_meta_image_id: new FormControl(),
-      safe_checkout: new FormControl(1),
-      secure_checkout: new FormControl(1),
-      social_share: new FormControl(1),
-      encourage_order: new FormControl(1),
-      encourage_view: new FormControl(1),
-      is_free_shipping: new FormControl(0),
-      tax_id: new FormControl('', [Validators.required]),
-      estimated_delivery_text: new FormControl(),
-      return_policy_text: new FormControl(),
-      is_featured: new FormControl(0),
-      is_trending: new FormControl(0),
-      is_return: new FormControl(0),
-      status: new FormControl(1)
+      product_type: ['physical'],
+      name: [''],
+      short_description: [''],
+      description: [''],
+      store_id: [],
+      type: ['simple'],
+      digital_file_ids: [],
+      preview_type: ['url'],
+      preview_audio_file_id: [],
+      preview_video_file_id: [],
+      is_licensable: [0],
+      is_licensekey_auto: [0],
+      license_key: [],
+      separator: [],
+      preview_url: [],
+      is_external: [0],
+      external_url: [],
+      external_button_text: [],
+      unit: [],
+      weight: [],
+      stock_status: ['in_stock'],
+      sku: [''],
+      quantity: [''],
+      price: [''],
+      discount: [],
+      wholesale_price_type: [],
+      wholesale_prices: this.formBuilder.array([]),
+      is_sale_enable: [0],
+      sale_starts_at: [],
+      sale_expired_at: [],
+      tags: [],
+      categories: [''],
+      brand_id: [''],
+      is_random_related_products: [0],
+      related_products: [],
+      cross_sell_products: [[]],
+      product_thumbnail_id: [],
+      watermark: [0],
+      watermark_position: ['center'],
+      watermark_image_id: [],
+      product_galleries_id: [],
+      size_chart_image_id: [],
+      variants: this.formBuilder.array([]),
+      variations: this.formBuilder.array([]),
+      attributes_ids: [[]],
+      meta_title: [],
+      meta_description: [],
+      product_meta_image_id: [],
+      safe_checkout: [1],
+      secure_checkout: [1],
+      social_share: [1],
+      encourage_order: [1],
+      encourage_view: [1],
+      is_free_shipping: [0],
+      tax_id: [''],
+      estimated_delivery_text: [],
+      return_policy_text: [],
+      is_featured: [0],
+      is_trending: [0],
+      is_return: [0],
+      status: [1]
     });
   }
 
@@ -520,6 +561,9 @@ export class FormProductComponent {
       this.collectionProduct = product?.length ? product.filter(res => res?.data?.stock_status == 'in_stock') : [];
     });
 
+    // Suggestion for a code change
+  
+
     this.setting$.subscribe(setting => {
       if(setting?.activation?.multivendor) {
         this.form.controls['store_id'].setValidators([Validators.required]);
@@ -757,26 +801,22 @@ export class FormProductComponent {
   }
 
   selectTagItem(data: Number[]) {
-    if(Array.isArray(data)) {
-      this.form.controls['tags'].setValue(Array.isArray(data) ? data : []);
+    if (Array.isArray(data)) {
+      this.form.controls['tags'].setValue(data);
     }
   }
 
   selectThumbnail(data: Attachment) {
-    if(!Array.isArray(data)) {
-      this.form.controls['product_thumbnail_id'].setValue(data ? data?.id : null);
-    }
+    this.form.controls['product_thumbnail_id'].setValue(data?.id || null);
   }
 
-  selectImages(data: Attachment) {
-    let ids = Array.isArray(data) ? data?.map(image => image && image?.id) : [];
+  selectImages(data: Attachment[]) {
+    const ids = Array.isArray(data) ? data.map(image => image?.id).filter(id => id) : [];
     this.form.controls['product_galleries_id'].setValue(ids);
   }
 
   selectSizeImage(data: Attachment) {
-    if(!Array.isArray(data)) {
-      this.form.controls['size_chart_image_id'].setValue(data ? data.id : null);
-    }
+    this.form.controls['size_chart_image_id'].setValue(data?.id || null);
   }
 
   selectMetaImage(data: Attachment) {
@@ -853,7 +893,7 @@ export class FormProductComponent {
       // If attribute has only one option, include it in the prefix and IDs
       const currentOption = currentOptions[0];
       const newPrefix = `${prefix}${currentOption.label}/`;
-      const newIds: number[] = [...attribute_values, ...currentAttribute?.attribute_values!];
+      const newIds: number[] = [...attribute_values, currentOption.value];
 
       const childCombinations = this.generateCombinations(
         attributes, index + 1, newPrefix, newIds
