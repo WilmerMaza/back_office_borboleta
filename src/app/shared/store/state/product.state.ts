@@ -92,44 +92,38 @@ export class ProductState {
 
   @Action(GetProducts)
   getProducts(ctx: StateContext<ProductStateModel>, action: GetProducts) {
+    console.log('Estado actual:', ctx.getState());
     return this.productService.getProducts(action.payload).pipe(
-      tap({
-        next: (result: ProductModel) => {
-          let paginateProduct
-          if(action.payload!['page'] && action.payload!['paginate']) {
-            paginateProduct = result.data.map((product) => ({ ...product })).slice(
-              (action.payload!['page'] - 1) * action.payload!['paginate'],
-              (action.payload!['page']- 1) * action.payload!['paginate'] + action.payload!['paginate'],
-            );
-          } else {
-            paginateProduct = result.data;
+      tap((response: ProductModel) => {
+        console.log('Actualizando estado con respuesta:', response);
+        const state = ctx.getState();
+        ctx.setState({
+          ...state,
+          product: {
+            data: response.data,
+            total: response.total
           }
-
-          if(action?.payload!['top_selling']) {
-            const state = ctx.getState();
-            ctx.patchState({
-              ...state,
-              topSellingProducts: paginateProduct
-            });
-          } else {
-            ctx.patchState({
-              product: {
-                data: paginateProduct,
-                total: result?.total ? result?.total : paginateProduct?.length
-              }
-            });
-          }
-        },
-        error: err => {
-          throw new Error(err?.error?.message);
-        }
+        });
+        console.log('Nuevo estado:', ctx.getState());
       })
     );
   }
 
   @Action(CreateProduct)
-  create(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
-    // Create Product Logic Here
+  createProduct(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
+    return this.productService.createProduct(action.payload).pipe(
+      tap((response: Product) => {
+        const state = ctx.getState();
+        ctx.setState({
+          ...state,
+          product: {
+            data: [...state.product.data, response],
+            total: state.product.total + 1
+          }
+        });
+        this.notificationService.showSuccess('Producto creado exitosamente');
+      })
+    );
   }
 
   @Action(EditProduct)

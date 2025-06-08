@@ -114,6 +114,10 @@ export class ProductComponent {
     this.store.dispatch(new GetStores({ status: 1 }))
     this.product$.subscribe(product => {
       let products = product?.data?.filter((element: Product) => {
+        console.log('Producto:', element.name, 'Precio:', element.price, 'Precio de venta:', element.sale_price);
+        if (!element.sale_price && element.price) {
+          element.sale_price = element.price;
+        }
         element.stock = element.stock_status ? `<div class="status-${element.stock_status}"><span>${element.stock_status.replace(/_/g, " ")}</span></div>` : '-';
         element.store_name = element?.store ? element?.store?.store_name : '-';
         return element;
