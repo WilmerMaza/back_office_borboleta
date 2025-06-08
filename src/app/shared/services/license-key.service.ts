@@ -13,7 +13,9 @@ export class LicenseKeyService {
   constructor(private http: HttpClient) {}
 
   getLicenseKeys(payload?: Params): Observable<LicenseKeyModel> {
-    return this.http.get<LicenseKeyModel>(`${environment.URL}/license-key.json`, { params: payload });
+    return this.http.get<LicenseKeyModel>(`assets/data/license-key.json`, {
+      params: payload,
+    });
   }
 
 }

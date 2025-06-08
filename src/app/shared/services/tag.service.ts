@@ -13,7 +13,7 @@ export class TagService {
   constructor(private http: HttpClient) {}
 
   getTags(payload?: Params): Observable<TagModel> {
-    return this.http.get<TagModel>(`${environment.URL}/tag.json`, { params: payload });
+    return this.http.get<TagModel>(`assets/data/tag.json`, { params: payload });
   }
 
 }

@@ -13,7 +13,9 @@ export class RefundService {
   constructor(private http: HttpClient) {}
 
   getRefunds(payload?: Params): Observable<RefundModel> {
-    return this.http.get<RefundModel>(`${environment.URL}/refund.json`, { params: payload });
+    return this.http.get<RefundModel>(`assets/data/refund.json`, {
+      params: payload,
+    });
   }
 
 }

@@ -13,7 +13,9 @@ export class WalletService {
   constructor(private http: HttpClient) {}
 
   getUserTransaction(payload?: Params): Observable<Wallet> {
-    return this.http.get<Wallet>(`${environment.URL}/wallet.json`, { params: payload });
+    return this.http.get<Wallet>(`assets/data/wallet.json`, {
+      params: payload,
+    });
   }
 
 }

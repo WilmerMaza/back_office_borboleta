@@ -13,6 +13,8 @@ export class CategoryService {
   constructor(private http: HttpClient) {}
 
   getCategories(payload?: Params): Observable<CategoryModel> {
-    return this.http.get<CategoryModel>(`${environment.URL}/category.json`, { params: payload });
+    return this.http.get<CategoryModel>(`assets/data/category.json`, {
+      params: payload,
+    });
   }
 }

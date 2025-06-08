@@ -13,11 +13,13 @@ export class DashboardService {
   constructor(private http: HttpClient) {}
 
   getStatisticsCount(payload?: Params): Observable<StatisticsCount> {
-    return this.http.get<StatisticsCount>(`${environment.URL}/count.json`, { params: payload });
+    return this.http.get<StatisticsCount>(`assets/data/count.json`, {
+      params: payload,
+    });
   }
 
   getRevenueChart(): Observable<RevenueChart> {
-    return this.http.get<RevenueChart>(`${environment.URL}/chart.json`);
+    return this.http.get<RevenueChart>(`assets/data/chart.json`);
   }
 
 }

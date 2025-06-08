@@ -13,10 +13,12 @@ export class RoleService {
   constructor(private http: HttpClient) {}
 
   getRoleModules(): Observable<Module[]> {
-    return this.http.get<Module[]>(`${environment.URL}/module.json`);
+    return this.http.get<Module[]>(`assets/data/module.json`);
   }
 
   getRoles(payload?: Params): Observable<RoleModel> {
-    return this.http.get<RoleModel>(`${environment.URL}/role.json`, { params: payload });
+    return this.http.get<RoleModel>(`assets/data/role.json`, {
+      params: payload,
+    });
   }
 }

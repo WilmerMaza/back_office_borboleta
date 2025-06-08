@@ -12,7 +12,7 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   getUserDetails(): Observable<AccountUser> {
-    return this.http.get<AccountUser>(`${environment.URL}/self.json`);
+    return this.http.get<AccountUser>(`assets/data/self.json`);
   }
    
 }

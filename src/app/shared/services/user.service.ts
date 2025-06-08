@@ -13,7 +13,9 @@ export class UserService {
   constructor(private http: HttpClient) {}
 
   getUsers(payload?: Params): Observable<UserModel> {
-    return this.http.get<UserModel>(`${environment.URL}/user.json`, { params: payload });
+    return this.http.get<UserModel>(`assets/data/user.json`, {
+      params: payload,
+    });
   }
 
 }

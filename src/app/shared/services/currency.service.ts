@@ -13,7 +13,9 @@ export class CurrencyService {
   constructor(private http: HttpClient) {}
 
   getCurrencies(payload?: Params): Observable<CurrencyModel> {
-    return this.http.get<CurrencyModel>(`${environment.URL}/currency.json`, { params: payload });
+    return this.http.get<CurrencyModel>(`assets/data/currency.json`, {
+      params: payload,
+    });
   }
 
 }

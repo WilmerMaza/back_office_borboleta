@@ -13,6 +13,8 @@ export class BlogService {
   constructor(private http: HttpClient) {}
 
   getBlogs(payload?: Params): Observable<BlogModel> {
-    return this.http.get<BlogModel>(`${environment.URL}/blog.json`, { params: payload });
+    return this.http.get<BlogModel>(`assets/data/blog.json`, {
+      params: payload,
+    });
   }
 }

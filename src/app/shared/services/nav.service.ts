@@ -21,7 +21,7 @@ export class NavService {
   constructor(private http: HttpClient) { }
 
   getBadges(payload?: Params): Observable<Badges> {
-    return this.http.get<Badges>(`${environment.URL}/badge.json`, payload);
+    return this.http.get<Badges>(`assets/data/badge.json`, payload);
   }
 
 }

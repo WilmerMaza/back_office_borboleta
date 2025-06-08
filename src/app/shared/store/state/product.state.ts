@@ -130,6 +130,9 @@ export class ProductState {
   @Action(CreateProduct)
   create(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
     // Create Product Logic Here
+
+    console.log('no hago nada');
+    
   }
 
   @Action(EditProduct)

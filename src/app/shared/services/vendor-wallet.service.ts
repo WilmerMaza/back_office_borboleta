@@ -13,7 +13,9 @@ export class VendorWalletService {
   constructor(private http: HttpClient) {}
 
   getVendorTransaction(payload?: Params): Observable<VenderWallet> {
-    return this.http.get<VenderWallet>(`${environment.URL}/wallet.json`, { params: payload });
+    return this.http.get<VenderWallet>(`assets/data/wallet.json`, {
+      params: payload,
+    });
   }
   
 }

@@ -13,7 +13,7 @@ export class PointService {
   constructor(private http: HttpClient) {}
 
   getUserTransaction(payload?: Params): Observable<Point> {
-    return this.http.get<Point>(`${environment.URL}/points.json`, { params: payload });
+    return this.http.get<Point>(`assets/data/points.json`, { params: payload });
   }
 
 }

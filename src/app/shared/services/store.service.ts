@@ -13,7 +13,9 @@ export class StoreService {
   constructor(private http: HttpClient) {}
 
   getStores(payload?: Params): Observable<StoresModel> {
-    return this.http.get<StoresModel>(`${environment.URL}/store.json`, { params: payload });
+    return this.http.get<StoresModel>(`assets/data/store.json`, {
+      params: payload,
+    });
   }
 
 }

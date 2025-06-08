@@ -13,6 +13,6 @@ export class TaxService {
   constructor(private http: HttpClient) {}
 
   getTaxes(payload?: Params): Observable<TaxModel> {
-    return this.http.get<TaxModel>(`${environment.URL}/tax.json`, { params: payload });
+    return this.http.get<TaxModel>(`assets/data/tax.json`, { params: payload });
   }
 }

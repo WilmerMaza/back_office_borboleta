@@ -13,7 +13,9 @@ export class OrderService {
   constructor(private http: HttpClient) {}
 
   getOrders(payload?: Params): Observable<OrderModel> {
-    return this.http.get<OrderModel>(`${environment.URL}/order.json`, { params: payload });
+    return this.http.get<OrderModel>(`assets/data/order.json`, {
+      params: payload,
+    });
   }
 
 }

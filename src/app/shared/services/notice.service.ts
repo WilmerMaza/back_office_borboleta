@@ -13,7 +13,9 @@ export class NoticeService {
   constructor(private http: HttpClient) {}
   
   getNotice(payload?: Params): Observable<NoticeModel> {
-    return this.http.get<NoticeModel>(`${environment.URL}/notice.json`, { params: payload });
+    return this.http.get<NoticeModel>(`assets/data/notice.json`, {
+      params: payload,
+    });
   }
  
 }

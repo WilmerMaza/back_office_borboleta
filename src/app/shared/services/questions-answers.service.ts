@@ -13,6 +13,8 @@ export class QuestionsAnswersService {
   constructor(private http: HttpClient) { }
 
   getQuestionAnswers(payload?: Params): Observable<QnAModel> {
-    return this.http.get<QnAModel>(`${environment.URL}/question-and-answer.json`, { params: payload });
+    return this.http.get<QnAModel>(`assets/data/question-and-answer.json`, {
+      params: payload,
+    });
   }
 }

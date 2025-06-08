@@ -13,6 +13,9 @@ export class CommissionService {
   constructor(private http: HttpClient) {}
 
   getCommissionHistory(payload?: Params): Observable<CommissionModel> {
-    return this.http.get<CommissionModel>(`${environment.URL}/commissionHistory.json`, { params: payload });
+    return this.http.get<CommissionModel>(
+      `assets/data/commissionHistory.json`,
+      { params: payload }
+    );
   }
 }

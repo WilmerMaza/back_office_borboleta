@@ -13,6 +13,8 @@ export class BrandService {
   constructor(private http: HttpClient) {}
 
   getBrands(payload?: Params): Observable<BrandModel> {
-    return this.http.get<BrandModel>(`${environment.URL}/brand.json`, { params: payload });
+    return this.http.get<BrandModel>(`assets/data/brand.json`, {
+      params: payload,
+    });
   }
 }

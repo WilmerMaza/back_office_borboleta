@@ -15,6 +15,6 @@ export class CountryService {
   ) {}
 
   getCountries(): Observable<Country[]> {
-    return this.http.get<Country[]>(`${environment.URL}/country.json`);
+    return this.http.get<Country[]>(`assets/data/country.json`);
   }
 }

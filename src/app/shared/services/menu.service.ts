@@ -13,7 +13,9 @@ export class MenuService {
   constructor(private http: HttpClient) {}
 
   getMenu(payload?: Params): Observable<MenuModel> {
-    return this.http.get<MenuModel>(`${environment.URL}/menu.json`, { params: payload });
+    return this.http.get<MenuModel>(`assets/data/menu.json`, {
+      params: payload,
+    });
   }
 
 }

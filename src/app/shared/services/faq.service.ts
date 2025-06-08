@@ -13,7 +13,7 @@ export class FaqService {
   constructor(private http: HttpClient) {}
 
   getFaqs(payload?: Params): Observable<FaqModel> {
-    return this.http.get<FaqModel>(`${environment.URL}/faq.json`, { params: payload });
+    return this.http.get<FaqModel>(`assets/data/faq.json`, { params: payload });
   }
 
 }

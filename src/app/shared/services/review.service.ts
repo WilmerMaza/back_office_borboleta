@@ -13,7 +13,9 @@ export class ReviewService {
   constructor(private http: HttpClient) {}
 
   getReviews(payload?: Params): Observable<ReviewModel> {
-    return this.http.get<ReviewModel>(`${environment.URL}/review.json`, { params: payload });
+    return this.http.get<ReviewModel>(`assets/data/review.json`, {
+      params: payload,
+    });
   }
   
 }

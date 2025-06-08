@@ -12,7 +12,7 @@ export class StateService {
   constructor(private http: HttpClient) {}
 
   getStates(): Observable<States[]> {
-    return this.http.get<States[]>(`${environment.URL}/state.json`);
+    return this.http.get<States[]>(`assets/data/state.json`);
   }
 
 }

@@ -13,6 +13,8 @@ export class PageService {
   constructor(private http: HttpClient) {}
 
   getPages(payload?: Params): Observable<PageModel> {
-    return this.http.get<PageModel>(`${environment.URL}/page.json`, { params: payload });
+    return this.http.get<PageModel>(`assets/data/page.json`, {
+      params: payload,
+    });
   }
 }

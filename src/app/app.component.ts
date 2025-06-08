@@ -52,7 +52,7 @@ export class AppComponent {
 
       // Set site title
       this.titleService.setTitle(setting?.general?.site_title && setting?.general?.site_tagline ?
-        `${setting?.general?.site_title} | ${setting?.general?.site_tagline}` : 'Marketplace: Where Vendors Shine Together' )
+        `${setting?.general?.site_title} | ${setting?.general?.site_tagline}` : 'Borboleta' )
     });
 
     // customize default values of navs used by this component tree

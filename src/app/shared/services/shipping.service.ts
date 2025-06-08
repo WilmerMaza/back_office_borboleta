@@ -13,7 +13,9 @@ export class ShippingService {
   constructor(private http: HttpClient) {}
 
   getShippings(payload?: Params): Observable<Shipping[]> {
-    return this.http.get<Shipping[]>(`${environment.URL}/shipping.json`, { params: payload });
+    return this.http.get<Shipping[]>(`assets/data/shipping.json`, {
+      params: payload,
+    });
   }
   
 }

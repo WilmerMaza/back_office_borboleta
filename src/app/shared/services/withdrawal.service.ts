@@ -13,6 +13,8 @@ export class WithdrawalService {
   constructor(private http: HttpClient) {}
 
   getWithdrawRequest(payload?: Params): Observable<WithdrawalModel> {
-    return this.http.get<WithdrawalModel>(`${environment.URL}/withdrawRequest.json`, { params: payload });
+    return this.http.get<WithdrawalModel>(`assets/data/withdrawRequest.json`, {
+      params: payload,
+    });
   }
 }

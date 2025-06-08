@@ -13,11 +13,11 @@ export class ThemeService {
   constructor(private http: HttpClient) { }
 
   getThemes(): Observable<ThemesModel> {
-    return this.http.get<ThemesModel>(`${environment.URL}/theme.json`);
+    return this.http.get<ThemesModel>(`assets/data/theme.json`);
   }
 
   getHomePage(payload?: Params): Observable<any> {
-    return this.http.get(`${environment.URL}/home/${payload!['slug']}.json`);
+    return this.http.get(`assets/data/home/${payload!["slug"]}.json`);
   }
   
 }

@@ -13,7 +13,9 @@ export class SubscriptionService {
   constructor(private http: HttpClient) {}
 
   getSubscribeList(payload?: Params): Observable<SubscriptionModel> {
-    return this.http.get<SubscriptionModel>(`${environment.URL}/subscribe.json`, { params: payload });
+    return this.http.get<SubscriptionModel>(`assets/data/subscribe.json`, {
+      params: payload,
+    });
   }
 
 }

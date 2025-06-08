@@ -13,7 +13,9 @@ export class AttachmentService {
   constructor(private http: HttpClient) {}
 
   getAttachments(payload?: Params): Observable<AttachmentModel> {
-    return this.http.get<AttachmentModel>(`${environment.URL}/attachment.json`, { params: payload });
+    return this.http.get<AttachmentModel>(`assets/data/attachment.json`, {
+      params: payload,
+    });
   }
 
 }
