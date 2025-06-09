@@ -80,7 +80,7 @@ export class ProductComponent {
       { title: "image", dataField: "product_thumbnail", class: 'tbl-image', type: 'image', placeholder: 'assets/images/product.png' },
       { title: "name", dataField: "name", sortable: true, sort_direction: 'desc' },
       { title: "sku", dataField: "sku", sortable: true, sort_direction: 'desc' },
-      { title: "price", dataField: "sale_price", type: 'price', sortable: true, sort_direction: 'desc' },
+      { title: "price", dataField: "price", type: 'price', sortable: true, sort_direction: 'desc' },
       { title: "stock", dataField: "stock" },
       { title: "store", dataField: "store_name" },
       { title: "approved", dataField: "is_approved", type: "switch", canAllow: ['admin'] },
