@@ -51,6 +51,8 @@ export class ProductState {
         name: res.name,
         slug: res.slug,
         stock_status: res.stock_status,
+        price: res.price,
+        sale_price: res.sale_price,
         image: res.product_thumbnail ? res.product_thumbnail.original_url : 'assets/images/product.png'
       }}
     })
@@ -95,6 +97,7 @@ export class ProductState {
     return this.productService.getProducts(action.payload).pipe(
       tap({
         next: (result: ProductModel) => {
+          console.log('Productos recibidos del endpoint:', result);
           let paginateProduct
           if(action.payload!['page'] && action.payload!['paginate']) {
             paginateProduct = result.data.map((product) => ({ ...product })).slice(
@@ -128,11 +131,20 @@ export class ProductState {
   }
 
   @Action(CreateProduct)
-  create(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
-    // Create Product Logic Here
-
-    console.log('no hago nada');
-    
+  createProduct(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
+    return this.productService.createProduct(action.payload).pipe(
+      tap((response: Product) => {
+        const state = ctx.getState();
+        ctx.setState({
+          ...state,
+          product: {
+            data: [...state.product.data, response],
+            total: state.product.total + 1
+          }
+        });
+        this.notificationService.showSuccess('Producto creado exitosamente');
+      })
+    );
   }
 
   @Action(EditProduct)
@@ -155,8 +167,25 @@ export class ProductState {
   }
 
   @Action(UpdateProduct)
-  update(ctx: StateContext<ProductStateModel>, { payload, id }: UpdateProduct) {
-    // Update Product Login Here
+  update(ctx: StateContext<ProductStateModel>, action: UpdateProduct) {
+    return this.productService.updateProduct(action.payload, action.id).pipe(
+      tap({
+        next: (result) => {
+          const state = ctx.getState();
+          ctx.patchState({
+            product: {
+              ...state.product,
+              data: state.product.data.map(p => p.id === action.id ? action.payload : p)
+            }
+          });
+          this.notificationService.showSuccess('Producto actualizado exitosamente');
+        },
+        error: (err) => {
+          this.notificationService.showError('Error al actualizar el producto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(UpdateProductStatus)
