@@ -110,7 +110,7 @@
             </tr>
          </thead>
          <tbody>
-            @for(columnData of tableConfig?.data; track columnData.id; let i = $index){
+            @for(columnData of tableConfig?.data; track columnData.id || i; let i = $index){
                <tr>
                   @if(hasCheckbox){
                      <td class="sm-width">

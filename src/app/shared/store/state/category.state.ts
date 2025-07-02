@@ -41,8 +41,6 @@ export class CategoryState {
   @Selector()
   static categories(state: CategoryStateModel) {
     return state.category.data.map(res => { 
-      console.log('Categoría recibida en selector:', res);
-      console.log('Valor de name:', res?.name);
       return { 
         label: res?.name || 'Sin nombre', 
         name: res?.name || 'Sin nombre',
@@ -75,12 +73,9 @@ export class CategoryState {
 
   @Action(GetCategories)
   getCategories(ctx: StateContext<CategoryStateModel>, action: GetCategories) {
-    console.log('GetCategories action ejecutándose con payload:', action.payload);
     return this.categoryService.getCategories(action.payload).pipe(
       tap({
         next: result => { 
-          console.log('Datos recibidos del backend:', result);
-          
           ctx.patchState({
             category: {
               data: result.data || [],
@@ -88,8 +83,6 @@ export class CategoryState {
         
             }
           });
-          
-          console.log('Estado después de patchState:', ctx.getState());
         },
         error: err => { 
           console.error('Error loading categories:', err);

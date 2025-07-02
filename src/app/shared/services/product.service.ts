@@ -13,15 +13,15 @@ export class ProductService {
   constructor(private http: HttpClient) {}
 
   getProducts(payload?: Params): Observable<ProductModel> {
-    return this.http.get<ProductModel>(`${environment.apiUrl}/products`, {
+    return this.http.get<ProductModel>(`${environment.URL}/products`, {
       params: payload,
     });
   }
   createProduct(product: Product): Observable<Product> {
-    return this.http.post<Product>(`${environment.apiUrl}/products`, product);
+    return this.http.post<Product>(`${environment.URL}/products`, product);
   }
 
   updateProduct(product: Product, id: number): Observable<Product> {
-    return this.http.put<Product>(`${environment.apiUrl}/products/${id}`, product);
+    return this.http.put<Product>(`${environment.URL}/products/${id}`, product);
   }
 }
