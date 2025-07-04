@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 
 @Component({
     selector: 'app-dropdown-list',
@@ -6,7 +6,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     templateUrl: './dropdown-list.component.html',
     styleUrl: './dropdown-list.component.scss'
 })
-export class DropdownListComponent {
+export class DropdownListComponent implements OnInit {
 
   @Input() data: any;
   @Input() selectedPillIds: number[];
@@ -17,6 +17,18 @@ export class DropdownListComponent {
   
   @Output() selected: EventEmitter<any> = new EventEmitter();
   @Output() subItemClicked: EventEmitter<any> = new EventEmitter();
+
+  ngOnInit() {
+    console.log('=== DROPDOWN LIST DEBUG ===');
+    console.log('DropdownList data:', this.data);
+    console.log('DropdownList key:', this.key);
+    console.log('DropdownList data[key]:', this.data?.[this.key]);
+    console.log('DropdownList data.name:', this.data?.name);
+    console.log('DropdownList data.id:', this.data?.id);
+    console.log('DropdownList selectedPillIds:', this.selectedPillIds);
+    console.log('DropdownList parentId:', this.parentId);
+    console.log('=== FIN DROPDOWN LIST DEBUG ===');
+  }
   
 
   select(data: any) {

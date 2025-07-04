@@ -35,8 +35,15 @@ export class CategoryState {
 
   @Selector()
   static category(state: CategoryStateModel) {
+    console.log('=== CATEGORY SELECTOR DEBUG ===');
+    console.log('Category selector called');
+    console.log('State category data:', state.category.data);
+    console.log('State category data length:', state.category.data?.length);
+    console.log('=== FIN CATEGORY SELECTOR DEBUG ===');
     return state.category;
   }
+
+
 
   @Selector()
   static categories(state: CategoryStateModel) {
@@ -73,9 +80,13 @@ export class CategoryState {
 
   @Action(GetCategories)
   getCategories(ctx: StateContext<CategoryStateModel>, action: GetCategories) {
+    console.log('=== GET CATEGORIES ACTION DEBUG ===');
+    console.log('GetCategories action called with payload:', action.payload);
     return this.categoryService.getCategories(action.payload).pipe(
       tap({
         next: result => { 
+          console.log('GetCategories action - API result:', result);
+          console.log('GetCategories action - Categories count:', result.data?.length);
           ctx.patchState({
             category: {
               data: result.data || [],
@@ -83,6 +94,7 @@ export class CategoryState {
         
             }
           });
+          console.log('GetCategories action - State updated');
         },
         error: err => { 
           console.error('Error loading categories:', err);
@@ -127,9 +139,49 @@ export class CategoryState {
     );
   }
 
- 
+  @Action(UpdateCategory)
+  update(ctx: StateContext<CategoryStateModel>, action: UpdateCategory) {
+    return this.categoryService.updateCategory(action.payload, action.id).pipe(
+      tap((response: Category) => {
+        const state = ctx.getState();
+        const updatedData = state.category.data.map(category => 
+          category.id === action.id ? response : category
+        );
+        
+        ctx.setState({
+          ...state,
+          category: {
+            data: updatedData,
+            total: state.category.total
+          },
+          selectedCategory: response
+        });
+        
+        this.notificationService.showSuccess('Categoría actualizada exitosamente');
+      })
+    );
+  }
 
- 
+  @Action(DeleteCategory)
+  delete(ctx: StateContext<CategoryStateModel>, action: DeleteCategory) {
+    return this.categoryService.deleteCategory(action.id).pipe(
+      tap(() => {
+        const state = ctx.getState();
+        const filteredData = state.category.data.filter(category => category.id !== action.id);
+        
+        ctx.setState({
+          ...state,
+          category: {
+            data: filteredData,
+            total: state.category.total - 1
+          },
+          selectedCategory: null
+        });
+        
+        this.notificationService.showSuccess('Categoría eliminada exitosamente');
+      })
+    );
+  }
 
   @Action(ImportCategory)
   import(ctx: StateContext<CategoryStateModel>, action: ImportCategory) {

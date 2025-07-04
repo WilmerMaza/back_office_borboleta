@@ -24,4 +24,28 @@ export class ProductService {
   updateProduct(product: Product, id: number): Observable<Product> {
     return this.http.put<Product>(`${environment.URL}/products/${id}`, product);
   }
+
+  deleteProduct(id: number): Observable<any> {
+    if (!id || id === undefined || id === null) {
+      throw new Error('Product ID is required for deletion');
+    }
+    return this.http.delete(`${environment.URL}/products/${id}`);
+  }
+
+  updateProductStatus(id: number, status: boolean): Observable<any> {
+    if (!id || id === undefined || id === null) {
+      throw new Error('Product ID is required for status update');
+    }
+    return this.http.put(`${environment.URL}/products/${id}`, { status });
+  }
+
+  approveProduct(id: number, status: boolean): Observable<any> {
+    if (!id || id === undefined || id === null) {
+      throw new Error('Product ID is required for approval');
+    }
+    return this.http.put(`${environment.URL}/products/${id}`, { 
+      is_approved: status,
+      published_at: status ? new Date().toISOString() : null
+    });
+  }
 }

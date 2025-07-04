@@ -206,7 +206,7 @@ export class FormProductComponent {
     this.store.dispatch(new GetStores({status: 1, is_approved: 1}));
     this.store.dispatch(new GetAttributes({status: 1}));
     this.store.dispatch(new GetAttributeValues({status: 1}));
-    this.store.dispatch(new GetCategories({type: 'product', status: 1}));
+    this.store.dispatch(new GetCategories({status: 1}));
     this.store.dispatch(new GetTags({type: 'product', status: 1}));
     this.store.dispatch(new GetTaxes({status: 1}));
     this.store.dispatch(new GetBrands({status: 1}));
@@ -340,12 +340,12 @@ export class FormProductComponent {
             this.fromDate = product?.sale_starts_at ? convertToNgbDate(this.formatter.parse(product?.sale_starts_at)!) : null;
             this.toDate = product?.sale_expired_at ? convertToNgbDate(this.formatter.parse(product?.sale_expired_at)!) : null;
 
-            this.selectedCategories = product?.categories.map(value => value?.id!)!;
-            this.selectedTags = product?.tags.map(value => value?.id!)!;
+            this.selectedCategories = product?.categories?.map(value => value?.id!) || [];
+            this.selectedTags = product?.tags?.map(value => value?.id!) || [];
 
-            let attributes = product?.attributes?.map((value) => value?.id);
-            let galleries = product?.product_galleries?.map((value) => value?.id);
-            let digitalFiles = product?.digital_files?.map((value) => value?.id);
+            let attributes = product?.attributes?.map((value) => value?.id) || [];
+            let galleries = product?.product_galleries?.map((value) => value?.id) || [];
+            let digitalFiles = product?.digital_files?.map((value) => value?.id) || [];
             let separator = ",";
             if(product?.separator == 'comma') {
               separator = ",";
@@ -354,7 +354,7 @@ export class FormProductComponent {
             } else if(product?.separator == 'pipe') {
               separator = "|";
             }
-            let licenseKeys = product?.license_keys?.map((value) => value.license_key).join(separator);
+            let licenseKeys = product?.license_keys?.map((value) => value.license_key)?.join(separator) || '';
 
             if(product) this.product = product;
             this.id = product?.id!;
@@ -518,6 +518,17 @@ export class FormProductComponent {
 
     this.products$.subscribe(product => {
       this.collectionProduct = product?.length ? product.filter(res => res?.data?.stock_status == 'in_stock') : [];
+    });
+
+    // Monitorear categorías para debug
+    this.category$.subscribe(categories => {
+      console.log('=== CATEGORIES DEBUG ===');
+      console.log('Categories loaded:', categories);
+      console.log('Categories data:', categories?.data);
+      console.log('Categories count:', categories?.data?.length);
+      console.log('Categories data type:', typeof categories?.data);
+      console.log('Categories data is array:', Array.isArray(categories?.data));
+      console.log('=== END CATEGORIES DEBUG ===');
     });
 
     this.setting$.subscribe(setting => {

@@ -9,6 +9,7 @@ import { TableClickedAction, TableConfig } from '../../shared/interface/table.in
 import { ActivatedRoute, Params, Router, RouterModule } from '@angular/router';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { GetOrders } from '../../shared/store/action/order.action';
+import { GetOrderStatus } from '../../shared/store/action/order-status.action';
 import { GetStatisticsCount } from '../../shared/store/action/dashboard.action';
 import { TranslateModule } from '@ngx-translate/core';
 import { HasPermissionDirective } from '../../shared/directive/has-permission.directive';
@@ -92,6 +93,9 @@ export class OrderComponent {
   }
 
   ngOnInit() {
+    // Cargar estados de órdenes
+    this.store.dispatch(new GetOrderStatus());
+    
     this.order$.subscribe(order => {
       let orders = order?.data?.filter((element: Order) => {
         element.order_id = `<span class="fw-bolder">#${element?.order_number}</span>`;
@@ -100,6 +104,7 @@ export class OrderComponent {
         element.consumer_name = `<span class="text-capitalize">${element?.consumer?.name}</span>`;
         return element;
       });
+      
       this.tableConfig.data = order ? orders : [];
       this.tableConfig.total = order ? order?.total : 0;
     });

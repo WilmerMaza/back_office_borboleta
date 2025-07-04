@@ -13,13 +13,20 @@ export class CategoryService {
   constructor(private http: HttpClient) {}
 
   getCategories(payload?: Params): Observable<CategoryModel> {
-
     return this.http.get<CategoryModel>(`${environment.URL}/categories`, {
       params: payload,
-    })
+    });
   }
 
   createCategory(category: Category): Observable<Category> {
     return this.http.post<Category>(`${environment.URL}/categories`, category);
+  }
+
+  updateCategory(category: Category, id: number): Observable<Category> {
+    return this.http.put<Category>(`${environment.URL}/categories/${id}`, category);
+  }
+
+  deleteCategory(id: number): Observable<any> {
+    return this.http.delete(`${environment.URL}/categories/${id}`);
   }
 }

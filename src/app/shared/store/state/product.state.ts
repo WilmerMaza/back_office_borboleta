@@ -98,6 +98,8 @@ export class ProductState {
       tap({
         next: (result: ProductModel) => {
           console.log('Productos recibidos del endpoint:', result);
+          console.log('Productos con IDs:', result.data.map(p => ({ id: p.id, name: p.name })));
+          
           let paginateProduct
           if(action.payload!['page'] && action.payload!['paginate']) {
             paginateProduct = result.data.map((product) => ({ ...product })).slice(
@@ -190,17 +192,81 @@ export class ProductState {
 
   @Action(UpdateProductStatus)
   updateStatus(ctx: StateContext<ProductStateModel>, { id, status }: UpdateProductStatus) {
-    // Update Product Status Login Here
+    return this.productService.updateProductStatus(id, status).pipe(
+      tap({
+        next: () => {
+          const state = ctx.getState();
+          const updatedData = state.product.data.map(product => 
+            product.id === id ? { ...product, status } : product
+          );
+          
+          ctx.patchState({
+            product: {
+              ...state.product,
+              data: updatedData
+            }
+          });
+          
+          this.notificationService.showSuccess(`Estado del producto ${status ? 'activado' : 'desactivado'} exitosamente`);
+        },
+        error: (err) => {
+          this.notificationService.showError('Error al cambiar el estado del producto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(ApproveProductStatus)
   approveStatus(ctx: StateContext<ProductStateModel>, { id, status }: ApproveProductStatus) {
-    // Approve Product Status Login Here
+    return this.productService.approveProduct(id, status).pipe(
+      tap({
+        next: () => {
+          const state = ctx.getState();
+          const updatedData = state.product.data.map(product => 
+            product.id === id ? { ...product, is_approved: status } : product
+          );
+          
+          ctx.patchState({
+            product: {
+              ...state.product,
+              data: updatedData
+            }
+          });
+          
+          this.notificationService.showSuccess(`Producto ${status ? 'aprobado' : 'desaprobado'} exitosamente`);
+        },
+        error: (err) => {
+          this.notificationService.showError('Error al cambiar el estado de aprobación');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteProduct)
   delete(ctx: StateContext<ProductStateModel>, { id }: DeleteProduct) {
-    // Delete Product Login Here
+    return this.productService.deleteProduct(id).pipe(
+      tap({
+        next: () => {
+          const state = ctx.getState();
+          const filteredData = state.product.data.filter(product => product.id !== id);
+          
+          ctx.patchState({
+            product: {
+              data: filteredData,
+              total: state.product.total - 1
+            }
+          });
+          
+          this.notificationService.showSuccess('Producto eliminado exitosamente');
+        },
+        error: (err) => {
+          this.notificationService.showError('Error al eliminar el producto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteAllProduct)
