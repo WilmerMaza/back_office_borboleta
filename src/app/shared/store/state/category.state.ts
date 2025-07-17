@@ -35,14 +35,8 @@ export class CategoryState {
 
   @Selector()
   static category(state: CategoryStateModel) {
-    console.log('=== CATEGORY SELECTOR DEBUG ===');
-    console.log('Category selector called');
-    console.log('State category data:', state.category.data);
-    console.log('State category data length:', state.category.data?.length);
-    console.log('=== FIN CATEGORY SELECTOR DEBUG ===');
     return state.category;
   }
-
 
 
   @Selector()

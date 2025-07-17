@@ -97,8 +97,6 @@ export class ProductState {
     return this.productService.getProducts(action.payload).pipe(
       tap({
         next: (result: ProductModel) => {
-          console.log('Productos recibidos del endpoint:', result);
-          console.log('Productos con IDs:', result.data.map(p => ({ id: p.id, name: p.name })));
           
           let paginateProduct
           if(action.payload!['page'] && action.payload!['paginate']) {
