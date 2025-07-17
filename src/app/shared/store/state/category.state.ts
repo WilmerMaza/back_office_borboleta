@@ -80,13 +80,9 @@ export class CategoryState {
 
   @Action(GetCategories)
   getCategories(ctx: StateContext<CategoryStateModel>, action: GetCategories) {
-    console.log('=== GET CATEGORIES ACTION DEBUG ===');
-    console.log('GetCategories action called with payload:', action.payload);
     return this.categoryService.getCategories(action.payload).pipe(
       tap({
         next: result => { 
-          console.log('GetCategories action - API result:', result);
-          console.log('GetCategories action - Categories count:', result.data?.length);
           ctx.patchState({
             category: {
               data: result.data || [],
@@ -94,7 +90,6 @@ export class CategoryState {
         
             }
           });
-          console.log('GetCategories action - State updated');
         },
         error: err => { 
           console.error('Error loading categories:', err);
