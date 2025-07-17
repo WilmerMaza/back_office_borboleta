@@ -35,19 +35,7 @@ export class CategoryComponent {
   constructor(private store: Store, private router: Router) {}
 
   ngOnInit(): void {
-    console.log('=== CATEGORY MODULE DEBUG ===');
-    console.log('CategoryType:', this.categoryType);
     this.store.dispatch(new GetCategories({type: this.categoryType}));
-    
-    // Monitorear categorías en el módulo
-    this.category$.subscribe(categories => {
-      console.log('=== CATEGORIES DEBUG EN CATEGORY MODULE ===');
-      console.log('Categories loaded:', categories);
-      console.log('Categories data:', categories?.data);
-      console.log('Categories count:', categories?.data?.length);
-      console.log('Categories data structure:', categories?.data?.map(cat => ({id: cat.id, name: cat.name, type: cat.type, status: cat.status})));
-      console.log('=== END CATEGORIES DEBUG EN CATEGORY MODULE ===');
-    });
   }
 
   export() {

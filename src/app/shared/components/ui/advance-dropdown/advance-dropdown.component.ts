@@ -50,23 +50,7 @@ export class AdvanceDropdownComponent {
   }
 
   ngOnChanges() {
-    console.log('=== ADVANCE DROPDOWN DEBUG ===');
-    console.log('AdvanceDropdown ngOnChanges - options:', this.options);
-    console.log('AdvanceDropdown ngOnChanges - options length:', this.options?.length);
-    console.log('AdvanceDropdown ngOnChanges - options type:', typeof this.options);
-    console.log('AdvanceDropdown ngOnChanges - options is array:', Array.isArray(this.options));
-    
-    if (this.options?.length > 0) {
-      console.log('AdvanceDropdown ngOnChanges - Primera opción:', JSON.stringify(this.options[0], null, 2));
-      console.log('AdvanceDropdown ngOnChanges - Primera opción tiene subcategories:', this.options[0]?.subcategories);
-      console.log('AdvanceDropdown ngOnChanges - Primera opción tiene name:', this.options[0]?.name);
-      console.log('AdvanceDropdown ngOnChanges - Primera opción tiene id:', this.options[0]?.id);
-    }
-    
     this.optionsData = this.options;
-    console.log('AdvanceDropdown ngOnChanges - optionsData:', this.optionsData);
-    console.log('=== FIN ADVANCE DROPDOWN DEBUG ===');
-    
     this.selectedPills = [];
     this.selectedIds = [];
     if(this.selectedOption?.length){
