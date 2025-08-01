@@ -100,6 +100,7 @@ export class OrderState {
 
   @Action(ViewOrder)
   viewOrder(ctx: StateContext<OrderStateModel>, { id }: ViewOrder) {
+   
     return this.orderService.getOrderByNumber(id.toString()).pipe(
       tap({
         next: result => { 
