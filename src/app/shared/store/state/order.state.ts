@@ -98,7 +98,7 @@ export class OrderState {
 
   @Action(ViewOrder)
   viewOrder(ctx: StateContext<OrderStateModel>, { id }: ViewOrder) {
-    this.orderService.skeletonLoader = true;
+   
     return this.orderService.getOrders({ id }).pipe(
       tap({
         next: results => {
@@ -116,9 +116,7 @@ export class OrderState {
         
           throw new Error(err?.error?.message);
         },
-        complete: () => {
-          this.orderService.skeletonLoader = false;
-        }
+      
       })
     );
   }
