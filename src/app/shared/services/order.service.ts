@@ -10,6 +10,8 @@ import { OrderModel, Order } from '../interface/order.interface';
 })
 export class OrderService {
 
+  skeletonLoader = false;
+
   constructor(private http: HttpClient) {}
 
   getOrders(payload?: Params): Observable<OrderModel> {
@@ -18,14 +20,6 @@ export class OrderService {
     }).pipe(
       map((response: any) => {
         return response as OrderModel;
-      })
-    );
-  }
-
-  getOrderByNumber(orderNumber: string): Observable<Order> {
-    return this.http.get<any>(`${environment.URL}/orders/number/${orderNumber}`).pipe(
-      map((response: any) => {
-        return response.data as Order;
       })
     );
   }

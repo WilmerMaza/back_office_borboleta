@@ -100,18 +100,26 @@ export class OrderState {
 
   @Action(ViewOrder)
   viewOrder(ctx: StateContext<OrderStateModel>, { id }: ViewOrder) {
-   
-    return this.orderService.getOrderByNumber(id.toString()).pipe(
+    this.orderService.skeletonLoader = true;
+    return this.orderService.getOrders({ id }).pipe(
       tap({
-        next: result => { 
-          const state = ctx.getState();
-          ctx.patchState({
-            ...state,
-            selectedOrder: result
-          });
+        next: results => {
+          if(results && results.data) {
+            const state = ctx.getState();
+            const result = results.data.find(order => order.order_number == id);
+
+            ctx.patchState({
+              ...state,
+              selectedOrder: result
+            });
+          }
         },
-        error: err => { 
+        error: err => {
+        
           throw new Error(err?.error?.message);
+        },
+        complete: () => {
+          this.orderService.skeletonLoader = false;
         }
       })
     );
