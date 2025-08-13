@@ -10,6 +10,8 @@ import { OrderModel } from '../interface/order.interface';
 })
 export class OrderService {
 
+  skeletonLoader = false;
+
   constructor(private http: HttpClient) {}
 
   getOrders(payload?: Params): Observable<OrderModel> {
