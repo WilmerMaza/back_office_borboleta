@@ -38,14 +38,20 @@ export class CategoryState {
     return state.category;
   }
 
+
   @Selector()
   static categories(state: CategoryStateModel) {
     return state.category.data.map(res => { 
-      return { label: res?.name, value: res?.id, data: { 
-        name: res.name,
-        slug: res.slug,
-        image: res.category_icon ? res.category_icon.original_url : 'assets/images/category.png' 
-      }}
+      return { 
+        label: res?.name || 'Sin nombre', 
+        name: res?.name || 'Sin nombre',
+        value: res?.id || 0, 
+        data: { 
+          name: res?.name ,
+          slug: res?.slug || '',
+          image: res?.category_icon ? res?.category_icon.original_url : 'assets/images/category.png' 
+        }
+      }
     });
   }
 
@@ -73,13 +79,14 @@ export class CategoryState {
         next: result => { 
           ctx.patchState({
             category: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data.length
+              data: result.data || [],
+              total: result?.total || 0,
+        
             }
           });
         },
         error: err => { 
-          throw new Error(err?.error?.message);
+          console.error('Error loading categories:', err);
         }
       })
     );
@@ -87,7 +94,19 @@ export class CategoryState {
 
   @Action(CreateCategory)
   create(ctx: StateContext<CategoryStateModel>, action: CreateCategory) {
-    // Create Category Logic Here
+    return this.categoryService.createCategory(action.payload).pipe(
+      tap((response: Category) => {
+        const state = ctx.getState();
+        ctx.setState({
+          ...state,
+          category: {
+            data: [...state.category.data, response],
+            total: state.category.total + 1
+          }
+        });
+        this.notificationService.showSuccess('Categoría creada exitosamente');
+      })
+    );
   }
 
   @Action(EditCategory)
@@ -110,13 +129,47 @@ export class CategoryState {
   }
 
   @Action(UpdateCategory)
-  update(ctx: StateContext<CategoryStateModel>, { payload, id }: UpdateCategory) {
-    // Update Category Logic Here
+  update(ctx: StateContext<CategoryStateModel>, action: UpdateCategory) {
+    return this.categoryService.updateCategory(action.payload, action.id).pipe(
+      tap((response: Category) => {
+        const state = ctx.getState();
+        const updatedData = state.category.data.map(category => 
+          category.id === action.id ? response : category
+        );
+        
+        ctx.setState({
+          ...state,
+          category: {
+            data: updatedData,
+            total: state.category.total
+          },
+          selectedCategory: response
+        });
+        
+        this.notificationService.showSuccess('Categoría actualizada exitosamente');
+      })
+    );
   }
 
   @Action(DeleteCategory)
-  delete(ctx: StateContext<CategoryStateModel>, { id, type }: DeleteCategory) {
-    // Delete Category Logic Here
+  delete(ctx: StateContext<CategoryStateModel>, action: DeleteCategory) {
+    return this.categoryService.deleteCategory(action.id).pipe(
+      tap(() => {
+        const state = ctx.getState();
+        const filteredData = state.category.data.filter(category => category.id !== action.id);
+        
+        ctx.setState({
+          ...state,
+          category: {
+            data: filteredData,
+            total: state.category.total - 1
+          },
+          selectedCategory: null
+        });
+        
+        this.notificationService.showSuccess('Categoría eliminada exitosamente');
+      })
+    );
   }
 
   @Action(ImportCategory)

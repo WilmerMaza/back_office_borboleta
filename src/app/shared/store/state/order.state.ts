@@ -7,6 +7,7 @@ import { Order, OrderCheckout } from "../../interface/order.interface";
 import { User } from "../../interface/user.interface";
 import { UserService } from "../../services/user.service";
 import { OrderService } from "../../services/order.service";
+import { Store } from "@ngxs/store";
 
 export class OrderStateModel {
   order = {
@@ -35,7 +36,8 @@ export class OrderState {
   
   constructor(private router: Router,
     private orderService: OrderService,
-    private userService: UserService) {}
+    private userService: UserService,
+    private store: Store) {}
 
   @Selector()
   static order(state: OrderStateModel) {
@@ -98,11 +100,11 @@ export class OrderState {
 
   @Action(ViewOrder)
   viewOrder(ctx: StateContext<OrderStateModel>, { id }: ViewOrder) {
-    return this.orderService.getOrders().pipe(
+   
+    return this.orderService.getOrderByNumber(id.toString()).pipe(
       tap({
-        next: results => { 
+        next: result => { 
           const state = ctx.getState();
-          const result = results.data.find(order => Number(order.order_number) == id);
           ctx.patchState({
             ...state,
             selectedOrder: result
@@ -127,7 +129,21 @@ export class OrderState {
 
   @Action(UpdateOrderStatus)
   updateOrderStatus(ctx: StateContext<OrderStateModel>, { id, payload }: UpdateOrderStatus) {
-    // Update Order Status Logic Here
+    return this.orderService.updateOrderStatus(id, payload).pipe(
+      tap({
+        next: result => { 
+          // Actualizar la orden seleccionada si existe
+          const state = ctx.getState();
+          if (state.selectedOrder && state.selectedOrder.id === id) {
+            // Recargar la orden para obtener los datos actualizados
+            this.store.dispatch(new ViewOrder(state.selectedOrder.order_number));
+          }
+        },
+        error: err => { 
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DownloadInvoice)

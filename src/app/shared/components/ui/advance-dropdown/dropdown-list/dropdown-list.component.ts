@@ -17,7 +17,6 @@ export class DropdownListComponent {
   
   @Output() selected: EventEmitter<any> = new EventEmitter();
   @Output() subItemClicked: EventEmitter<any> = new EventEmitter();
-  
 
   select(data: any) {
     data.selected = !data.selected;
