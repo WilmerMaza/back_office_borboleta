@@ -1,5 +1,5 @@
 {
-  "name": "multikart-admin",
+  "name": "borboleta-admin",
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
@@ -7,10 +7,10 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "dev:ssr": "ng build --watch & ng run multikart-admin:server --watch & nodemon dist/multikart-admin/server/server.mjs",
-    "serve:ssr": "node dist/multikart-admin/server/server.mjs",
-    "build:ssr": "ng build && ng run multikart-admin:server",
-    "prerender": "ng run multikart-admin:prerender"
+    "dev:ssr": "ng build --watch & ng run borboleta-admin:server --watch & nodemon dist/borboleta-admin/server/server.mjs",
+    "serve:ssr": "node dist/borboleta-admin/server/server.mjs",
+    "build:ssr": "ng build && ng run borboleta-admin:server",
+    "prerender": "ng run borboleta-admin:prerender"
   },
   "private": true,
   "dependencies": {
