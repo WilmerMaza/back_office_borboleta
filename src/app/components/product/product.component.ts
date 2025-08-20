@@ -109,7 +109,6 @@ export class ProductComponent {
   }
 
   ngOnInit() {
-    this.store.dispatch(new GetCategories({ status: 1 }))
     this.store.dispatch(new GetBrands({ status: 1 }))
     this.store.dispatch(new GetStores({ status: 1 }))
     this.product$.subscribe(product => {
@@ -160,14 +159,26 @@ export class ProductComponent {
   }
 
   approve(data: Product) {
+    if (!data || !data.id) {
+      console.error('Error: Product ID is undefined or null', data);
+      return;
+    }
     this.store.dispatch(new ApproveProductStatus(data.id, data.is_approved));
   }
 
   status(data: Product) {
+    if (!data || !data.id) {
+      console.error('Error: Product ID is undefined or null', data);
+      return;
+    }
     this.store.dispatch(new UpdateProductStatus(data.id, data.status));
   }
 
   delete(data: Product) {
+    if (!data || !data.id) {
+      console.error('Error: Product ID is undefined or null', data);
+      return;
+    }
     this.store.dispatch(new DeleteProduct(data.id));
   }
 
