@@ -20,20 +20,30 @@ import { ProfileComponent } from './widgets/profile/profile.component';
 import { HasPermissionDirective } from '../../directive/has-permission.directive';
 
 @Component({
-    selector: 'app-header',
-    imports: [CommonModule, RouterModule, TranslateModule,
-        SearchComponent, QuickViewComponent, LanguagesComponent,
-        NotificationComponent, ModeComponent, ProfileComponent,
-        HasPermissionDirective
-    ],
-    templateUrl: './header.component.html',
-    styleUrl: './header.component.scss'
+  selector: "app-header",
+  imports: [
+    CommonModule,
+    RouterModule,
+    TranslateModule,
+    SearchComponent,
+    QuickViewComponent,
+    LanguagesComponent,
+    NotificationComponent,
+    ModeComponent,
+    ProfileComponent,
+    HasPermissionDirective,
+  ],
+  templateUrl: "./header.component.html",
+  styleUrl: "./header.component.scss",
 })
 export class HeaderComponent {
-
   user$: Observable<AccountUser> = inject(Store).select(AccountState.user);
-  setting$: Observable<Values> = inject(Store).select(SettingState.setting) as Observable<Values>;
-  notification$: Observable<Notification[]> = inject(Store).select(NotificationState.notification);
+  setting$: Observable<Values> = inject(Store).select(
+    SettingState.setting
+  ) as Observable<Values>;
+  notification$: Observable<Notification[]> = inject(Store).select(
+    NotificationState.notification
+  );
 
   public unreadNotificationCount: number;
 
@@ -43,36 +53,46 @@ export class HeaderComponent {
 
   public languages: Language[] = [
     {
-      language: 'English',
-      code: 'en',
-      icon: 'us'
+      language: "English",
+      code: "en",
+      icon: "us",
     },
     {
-      language: 'Français',
-      code: 'fr',
-      icon: 'fr'
+      language: "Français",
+      code: "fr",
+      icon: "fr",
+    },
+    {
+      language: "Español",
+      code: "es",
+      icon: "es",
     },
   ];
 
   public selectedLanguage: Language = {
-    language: 'English',
-    code: 'en',
-    icon: 'us'
-  }
+    language: "Español",
+    code: "es",
+    icon: "es",
+  };
+  
   public elem: any;
   public url: string;
 
-  constructor( public navServices: NavService,
-    @Inject(DOCUMENT) private document: any) {
+  constructor(
+    public navServices: NavService,
+    @Inject(DOCUMENT) private document: any
+  ) {
     this.notification$.subscribe((notification) => {
-      this.unreadNotificationCount = notification?.filter(item => !item.read_at)?.length;
+      this.unreadNotificationCount = notification?.filter(
+        (item) => !item.read_at
+      )?.length;
     });
-    this.setting$.subscribe(setting => {
-      if(setting && setting.general) {
+    this.setting$.subscribe((setting) => {
+      if (setting && setting.general) {
         this.url = setting.general.site_url;
         document.body.classList.add(setting.general.mode!);
       }
-    })
+    });
 
     this.elem = document.documentElement;
   }
@@ -81,7 +101,7 @@ export class HeaderComponent {
     this.navServices.collapseSidebar = !this.navServices.collapseSidebar;
   }
 
-  clickHeaderOnMobile(){
+  clickHeaderOnMobile() {
     this.navServices.search = true;
   }
 
@@ -115,5 +135,4 @@ export class HeaderComponent {
       }
     }
   }
-
 }
