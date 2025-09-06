@@ -29,12 +29,17 @@ export class LanguagesComponent {
       code: 'fr',
       icon: 'fr'
     },
+    {
+      language: 'Español',
+      code: 'es',
+      icon: 'es'
+    },
   ]
   
   public selectedLanguage: Language = {
-    language: 'English',
-    code: 'en',
-    icon: 'us'
+    language: 'Español',
+    code: 'es',
+    icon: 'es'
   }
 
   constructor(private translate: TranslateService, @Inject(PLATFORM_ID) private platformId: Object) {}
