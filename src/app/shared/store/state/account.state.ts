@@ -4,7 +4,7 @@ import { Action, Selector, State, StateContext } from "@ngxs/store";
 import { tap } from "rxjs";
 import { GetUserDetails, UpdateUserProfile, UpdateUserPassword, AccountClear, updateStoreDetails } from "../action/account.action";
 import { AccountUser } from "./../../interface/account.interface";
-import { AccountService } from "../../services/account.service";
+import { AccountService, AccountUserResponse } from "../../services/account.service";
 import { NotificationService } from "../../services/notification.service";
 import { Permission } from "../../interface/role.interface";
 
@@ -49,14 +49,38 @@ export class AccountState {
     return this.accountService.getUserDetails().pipe(
       tap({
         next: result => { 
-          ctx.patchState({
-            user: result,
-            permissions: result.permission,
-            roleName: result.role.name
-          });
+          if (result.success) {
+            // El backend devuelve 'permission' (singular) no 'permissions' (plural)
+            const permissions = result.data.permission || result.data.permissions || [];
+            
+            const mappedPermissions = permissions.map(p => ({
+              id: p.id,
+              permission_id: p.id,
+              name: p.name,
+              guard_name: p.guard_name
+            }));
+            
+            // El usuario está directamente en result.data, no en result.data.user
+            const userData = {
+              id: result.data.id,
+              name: result.data.name,
+              email: result.data.email,
+              country_code: result.data.country_code,
+              phone: result.data.phone,
+              status: result.data.status,
+              created_at: result.data.created_at
+            };
+            
+            ctx.patchState({
+              user: userData,
+              permissions: mappedPermissions,
+              roleName: result.data.role.name
+            });
+          }
         },
         error: err => { 
-          throw new Error(err?.error?.message);
+          console.error('Error obteniendo detalles del usuario:', err);
+          this.notificationService.notification = true;
         }
       })
     );
