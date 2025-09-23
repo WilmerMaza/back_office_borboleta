@@ -1,4 +1,4 @@
-import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 
 import { CurrencyPipe } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
@@ -67,6 +67,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     CurrencyPipe,
 
+
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
@@ -104,6 +105,7 @@ export const appConfig: ApplicationConfig = {
       AccountState,
       AttachmentState,
       AttributeState,
+      AuthState,
       BlogState,
       BrandState,
       CartState,
@@ -144,7 +146,6 @@ export const appConfig: ApplicationConfig = {
       WithdrawalState,
       OrderStatusState
     ]),
-    NgxsModule.forFeature([AuthState, StoreState]),
     NgxsStoragePluginModule.forRoot({
       keys: [
         'auth',

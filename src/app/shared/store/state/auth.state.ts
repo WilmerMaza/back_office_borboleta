@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Store, State, Selector, Action, StateContext } from "@ngxs/store";
 import { Router } from '@angular/router';
-import { tap } from "rxjs/operators";
+import { catchError, tap } from "rxjs/operators";
 import { AuthService } from "../../services/auth.service";
 import { ForgotPassWord, Login, VerifyEmailOtp, UpdatePassword, Logout, AuthClear } from "../action/auth.action";
 import { AccountClear, GetUserDetails } from "../action/account.action";
@@ -9,6 +9,7 @@ import { GetBadges } from "../action/sidebar.action";
 import { GetSettingOption } from "../action/setting.action";
 import { GetNotification } from "../action/notification.action";
 import { NotificationService } from "../../services/notification.service";
+import { of } from "rxjs";
 
 export interface AuthStateModel {
   email: string;
@@ -57,16 +58,42 @@ export class AuthState {
   @Action(Login)
   login(ctx: StateContext<AuthStateModel>, action: Login) {
     this.notificationService.notification = false;
-    ctx.patchState({
-      email: 'admin@example.com',
-      token: '',
-      access_token: '115|laravel_sanctum_mp1jyyMyKeE4qVsD1bKrnSycnmInkFXXIrxKv49w49d2a2c5',
-      permissions: [],
-    })
-    this.store.dispatch(new GetUserDetails());
-    this.store.dispatch(new GetBadges());
-    this.store.dispatch(new GetNotification());
-    this.store.dispatch(new GetSettingOption());
+    
+    const loginData = {
+      email: action.payload.email,
+      password: action.payload.password
+    };
+
+    return this.authService.login(loginData).pipe(
+      tap((response) => {
+        if (response.success) {
+          // Guardar token en localStorage
+          this.authService.setToken(response.data.access_token);
+          
+          // Actualizar estado
+          ctx.patchState({
+            email: response.data.user.email,
+            token: response.data.access_token,
+            access_token: response.data.access_token,
+            permissions: [],
+          });
+
+          // Cargar datos del usuario y configuraciones
+          this.store.dispatch(new GetUserDetails());
+          this.store.dispatch(new GetBadges());
+          this.store.dispatch(new GetNotification());
+          this.store.dispatch(new GetSettingOption());
+          
+          // Redirección automática después del login exitoso
+          this.router.navigateByUrl('/dashboard');
+        }
+      }),
+      catchError((error) => {
+        console.error('Error en login:', error);
+        this.notificationService.notification = true;
+        return of(null);
+      })
+    );
   }
 
   @Action(ForgotPassWord)
@@ -99,6 +126,9 @@ export class AuthState {
 
   @Action(AuthClear)
   authClear(ctx: StateContext<AuthStateModel>){
+    // Limpiar localStorage también
+    this.authService.removeToken();
+    
     ctx.patchState({
       email: '',
       token: '',

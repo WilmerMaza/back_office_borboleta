@@ -1,5 +1,5 @@
 import { CommonModule, DOCUMENT } from '@angular/common';
-import { Component, inject, Inject } from '@angular/core';
+import { Component, inject, Inject, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Router, RouterOutlet } from '@angular/router';
 import { NgbNavConfig } from '@ng-bootstrap/ng-bootstrap';
@@ -63,4 +63,5 @@ export class AppComponent {
       this.router.navigate(['/auth/login']);
     });
   }
+
 }
