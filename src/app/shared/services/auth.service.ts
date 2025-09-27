@@ -1,8 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment.development";
-import { APP_CONFIG } from "../config/app.config";
+import { Observable, tap } from "rxjs";
+import { environment } from "../../../environments/environment";
 
 export interface LoginRequest {
   email: string;
@@ -55,20 +54,34 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(loginData: LoginRequest): Observable<AuthResponse> {
-    // Usar backend real de Node.js
-    return this.http.post<AuthResponse>(`${environment.URL}${APP_CONFIG.ENDPOINTS.LOGIN}`, loginData);
+    console.log('Login data recibida:', loginData);
+    console.log('URL de login:', `${environment.URL}/users/login`);
+    
+    return this.http.post<AuthResponse>(`${environment.URL}/users/login`, loginData).pipe(
+      tap(response => {
+        console.log('Respuesta del servidor:', response);
+      })
+    );
   }
-
+  
+  
+ 
   register(registerData: RegisterRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${environment.URL}/auth/register`, registerData);
   }
 
   getUserDetails(): Observable<any> {
-    return this.http.get<any>(`${environment.URL}/auth/me`);
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    return this.http.get<any>(`${environment.URL}/auth/me`, { headers });
   }
 
   logout(): Observable<any> {
-    return this.http.post<any>(`${environment.URL}/auth/logout`, {});
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    return this.http.post<any>(`${environment.URL}/auth/logout`, {}, { headers });
   }
 
   isAuthenticated(): boolean {
