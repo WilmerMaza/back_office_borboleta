@@ -10,7 +10,7 @@ import { isPlatformBrowser, isPlatformServer } from "@angular/common";
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  private readonly NODE_API = 'http://localhost:3001';
+  private readonly NODE_API = 'https://borboleta.site';
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -28,18 +28,23 @@ export class AuthInterceptor implements HttpInterceptor {
     const isNode = this.isNodeApi(req.url);
     
     if (!isNode) {
+      console.log('AuthInterceptor - No es API de Node, pasando sin token');
       return next.handle(req);
     }
 
     const token = this.getValidJwtFromStateOrStorage();
+    console.log('AuthInterceptor - Token encontrado:', !!token);
 
     const authReq = token
       ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
       : req;
 
+    console.log('AuthInterceptor - Headers incluidos:', authReq.headers.keys());
+
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          console.error('AuthInterceptor - 401 Unauthorized, limpiando auth');
           this.notificationService.notification = false;
           this.store.dispatch(new AuthClear());
           this.router.navigate(['/auth/login']);
@@ -51,7 +56,7 @@ export class AuthInterceptor implements HttpInterceptor {
 
   private isNodeApi(url: string): boolean {
     try {
-      const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
+      const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'https://borboleta.site');
       return u.origin === this.NODE_API && u.pathname.startsWith('/api/');
     } catch { 
       return false; 

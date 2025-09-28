@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment.development";
+import { environment } from "../../../environments/environment";
 import { APP_CONFIG } from "../config/app.config";
 
 export interface LoginRequest {
@@ -64,11 +64,25 @@ export class AuthService {
   }
 
   getUserDetails(): Observable<any> {
-    return this.http.get<any>(`${environment.URL}/auth/me`);
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    console.log('Obteniendo detalles del usuario');
+    console.log('URL:', `${environment.URL}/auth/me`);
+    console.log('Token incluido:', !!token);
+    
+    return this.http.get<any>(`${environment.URL}/auth/me`, { headers });
   }
 
   logout(): Observable<any> {
-    return this.http.post<any>(`${environment.URL}/auth/logout`, {});
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    console.log('Cerrando sesión');
+    console.log('URL:', `${environment.URL}/auth/logout`);
+    console.log('Token incluido:', !!token);
+    
+    return this.http.post<any>(`${environment.URL}/auth/logout`, {}, { headers });
   }
 
   isAuthenticated(): boolean {
