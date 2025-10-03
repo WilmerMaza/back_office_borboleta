@@ -230,7 +230,28 @@ export class CheckoutComponent {
 
   placeorder() {
     if(this.form.valid) {
-      this.store.dispatch(new PlaceOrder(this.form.value));
+      console.log('Formulario válido, enviando orden:', this.form.value);
+      this.loading = true;
+      this.store.dispatch(new PlaceOrder(this.form.value)).subscribe({
+        next: (result) => {
+          console.log('Orden procesada:', result);
+          this.loading = false;
+        },
+        error: (error) => {
+          console.error('Error al crear la orden:', error);
+          this.loading = false;
+          // Aquí puedes mostrar un mensaje de error al usuario
+        },
+        complete: () => {
+          console.log('Proceso de orden completado');
+          this.loading = false;
+        }
+      });
+    } else {
+      console.error('Formulario inválido:', this.form.errors);
+      console.log('Valores del formulario:', this.form.value);
+      // Marcar todos los campos como tocados para mostrar errores
+      this.form.markAllAsTouched();
     }
   }
 

@@ -6,11 +6,12 @@ import { NotificationService } from "../../shared/services/notification.service"
 import { Observable, catchError, throwError } from "rxjs";
 import { AuthClear } from "../../shared/store/action/auth.action";
 import { isPlatformBrowser, isPlatformServer } from "@angular/common";
+import { environment } from "src/environments/environment.development";
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  private readonly NODE_API = 'http://localhost:3001';
+  private readonly NODE_API = environment.URL;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -52,7 +53,7 @@ export class AuthInterceptor implements HttpInterceptor {
   private isNodeApi(url: string): boolean {
     try {
       const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-      return u.origin === this.NODE_API && u.pathname.startsWith('/api/');
+      return u.origin === this.NODE_API.replace ('/api', '');
     } catch { 
       return false; 
     }

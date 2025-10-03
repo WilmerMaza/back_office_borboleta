@@ -338,17 +338,25 @@ export class DashboardComponent {
 
     // Revenue & Commision Chart
     this.revenueChart$.subscribe(revenue => {
-      if(revenue) {
+      console.log('Datos del gráfico recibidos:', revenue);
+      
+      if(revenue && revenue.revenues && revenue.commissions) {
+        console.log('Actualizando gráfico con datos:', {
+          revenues: revenue.revenues,
+          commissions: revenue.commissions,
+          months: revenue.months
+        });
+        
         this.chartOptions = {
           series: [
             {
               name: "Revenues",
-              data: revenue.revenues,
+              data: revenue.revenues || [],
               color: '#ec8951',
             },
             {
               name: "Commission",
-              data: revenue.commissions,
+              data: revenue.commissions || [],
               color: '#86909C',
             },
           ],
@@ -370,6 +378,27 @@ export class DashboardComponent {
             hover: {
               sizeOffset: 4
             }
+          }
+        };
+      } else {
+        console.warn('Datos del gráfico no válidos o vacíos:', revenue);
+        // Mantener datos por defecto para evitar errores
+        this.chartOptions = {
+          series: [
+            {
+              name: "Revenues",
+              data: [],
+              color: '#ec8951',
+            },
+            {
+              name: "Commission",
+              data: [],
+              color: '#86909C',
+            },
+          ],
+          chart: {
+            type: "line",
+            height: 350
           }
         };
       }
@@ -411,10 +440,29 @@ export class DashboardComponent {
 
   async ngAfterViewInit() {
     if (isPlatformBrowser(this.platformId)) {
-      const ApexCharts = (await import('apexcharts')).default;
-      const element = this.chart.nativeElement;
-      var chart = new ApexCharts(element, this.chartOptions);
-      chart.render();
+      try {
+        const ApexCharts = (await import('apexcharts')).default;
+        const element = this.chart.nativeElement;
+        
+        // Asegurar que chartOptions tiene la estructura correcta
+        if (!this.chartOptions || !this.chartOptions.series) {
+          console.warn('chartOptions no está inicializado correctamente');
+          return;
+        }
+        
+        // Verificar que las series tienen la propiedad data
+        this.chartOptions.series.forEach((series, index) => {
+          if (!series.data) {
+            console.warn(`Serie ${index} no tiene propiedad data:`, series);
+            series.data = [];
+          }
+        });
+        
+        var chart = new ApexCharts(element, this.chartOptions);
+        chart.render();
+      } catch (error) {
+        console.error('Error al renderizar el gráfico:', error);
+      }
     }
   }
 

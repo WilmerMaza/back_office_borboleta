@@ -74,7 +74,14 @@ export class AddCustomerModalComponent {
   submit(){
     this.form.markAllAsTouched();
     if(this.form.valid){
-      this.store.dispatch(new CreateUser(this.form.value))
+      this.store.dispatch(new CreateUser(this.form.value)).subscribe({
+        next: (result) => {
+          this.form.reset();
+        },
+        error: (error) => {
+          console.error('Error al crear usuario:', error);
+        }
+      });
     }
   }
 
