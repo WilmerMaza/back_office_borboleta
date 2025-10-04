@@ -995,18 +995,22 @@ export class FormProductComponent {
   }
 
   selectThumbnail(data: Attachment) {
+    console.log('selectThumbnail called with:', data);
     if (!Array.isArray(data)) {
       this.form.controls["product_thumbnail_id"].setValue(
         data ? data?.id : null
       );
+      console.log('product_thumbnail_id set to:', data ? data?.id : null);
     }
   }
 
   selectImages(data: Attachment) {
+    console.log('selectImages called with:', data);
     let ids = Array.isArray(data)
       ? data?.map((image) => image && image?.id)
       : [];
     this.form.controls["product_galleries_id"].setValue(ids);
+    console.log('product_galleries_id set to:', ids);
   }
 
   selectSizeImage(data: Attachment) {
@@ -1158,6 +1162,10 @@ export class FormProductComponent {
       slug: this.slugify(this.form.value.name),
     };
 
+    console.log('Product data being sent:', data);
+    console.log('product_thumbnail_id:', data.product_thumbnail_id);
+    console.log('product_galleries_id:', data.product_galleries_id);
+
     let action = new CreateProduct(data);
 
     if (this.form.controls["type"].value === "simple") {
@@ -1171,7 +1179,7 @@ export class FormProductComponent {
     }
 
     if (this.type == "edit" && this.id) {
-      action = new UpdateProduct(this.form.value, this.id);
+      action = new UpdateProduct(data, this.id);
     }
 
     if (this.form.valid) {

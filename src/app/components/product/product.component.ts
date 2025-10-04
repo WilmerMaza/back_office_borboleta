@@ -112,9 +112,22 @@ export class ProductComponent {
     this.store.dispatch(new GetBrands({ status: 1 }))
     this.store.dispatch(new GetStores({ status: 1 }))
     this.product$.subscribe(product => {
+      console.log('Products data from backend:', product);
+      if (product?.data?.length) {
+        console.log('First product:', product.data[0]);
+        console.log('product_thumbnail:', product.data[0].product_thumbnail);
+        console.log('product_galleries:', product.data[0].product_galleries);
+      }
+      
       let products = product?.data?.filter((element: Product) => {
         element.stock = element.stock_status ? `<div class="status-${element.stock_status}"><span>${element.stock_status.replace(/_/g, " ")}</span></div>` : '-';
         element.store_name = element?.store ? element?.store?.store_name : '-';
+        
+        // Si no hay product_thumbnail pero sí hay product_galleries, usar la primera imagen
+        if (!element.product_thumbnail && element.product_galleries && element.product_galleries.length > 0) {
+          element.product_thumbnail = element.product_galleries[0];
+        }
+        
         return element;
       });
       this.tableConfig.data = product ? products : [];
