@@ -154,7 +154,8 @@ export const appConfig: ApplicationConfig = {
         'account',
         'country',
         'state',
-        'setting'
+        'setting',
+        'cart'
       ]
     }),
     ),

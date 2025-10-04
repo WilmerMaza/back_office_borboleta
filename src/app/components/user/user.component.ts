@@ -6,7 +6,8 @@ import { TableComponent } from '../../shared/components/ui/table/table.component
 import { ImportCsvModalComponent } from '../../shared/components/ui/modal/import-csv-modal/import-csv-modal.component';
 import { Select, Store } from '@ngxs/store';
 import { UserState } from '../../shared/store/state/user.state';
-import { Observable } from 'rxjs';
+import { RoleState } from '../../shared/store/state/role.state';
+import { Observable, combineLatest } from 'rxjs';
 import { User, UserModel } from '../../shared/interface/user.interface';
 import { TableClickedAction, TableConfig } from '../../shared/interface/table.interface';
 import { Params } from '../../shared/interface/core.interface';
@@ -25,6 +26,7 @@ import { CommonModule } from '@angular/common';
 export class UserComponent {
 
   user$: Observable<UserModel> = inject(Store).select(UserState.user);
+  roles$: Observable<any[]> = inject(Store).select(RoleState.roles);
 
   @ViewChild("csvModal") CSVModal: ImportCsvModalComponent;
 
@@ -49,9 +51,11 @@ export class UserComponent {
     public router: Router) { }
 
   ngOnInit() {
-    this.user$.subscribe(user => {
-      let users = user?.data?.filter(element => {
-        element.role_name = element?.role?.name!
+    combineLatest([this.user$, this.roles$]).subscribe(([user, roles]) => {
+      let users = user?.data?.map(element => {
+        // Mapear role_id al nombre real del rol
+        const role = roles?.find(r => r.value === element.role_id);
+        element.role_name = role?.label || element?.role || 'Sin rol';
         return element;
       });
       this.tableConfig.data = user ? users : [];

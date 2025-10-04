@@ -4,9 +4,9 @@ export const APP_CONFIG = {
   
   // Endpoints
   ENDPOINTS: {
-    LOGIN: '/users/login',
+    LOGIN: '/admin/login',
     REGISTER: '/auth/register',
-    USER_DETAILS: '/auth/me',
+    USER_DETAILS: '/admin/me',
     LOGOUT: '/auth/logout',
     ROLES: '/roles',
     USERS: '/users',

@@ -1,7 +1,7 @@
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
-import { environment } from "../../../environments/environment.development";
+import { environment } from "../../../environments/environment";
 import { CartModel } from "../interface/cart.interface";
 
 @Injectable({
@@ -13,6 +13,11 @@ export class CartService {
 
   getCartItems(): Observable<CartModel> {
     return this.http.get<CartModel>(`assets/data/cart.json`);
+  }
+
+  updateQty(): void {
+    // Método para sincronizar cantidad con el backend si es necesario
+    console.log('Actualizando cantidad en el carrito');
   }
 
 }

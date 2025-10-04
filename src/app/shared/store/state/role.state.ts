@@ -41,9 +41,14 @@ export class RoleState {
 
   @Selector()
   static roles(state: RoleStateModel) {
-    return state.role.data.map(res => { 
+    console.log('RoleState.roles selector - state.role.data:', state.role.data);
+    const mappedRoles = state.role.data.map(res => { 
       return { label: res?.name, value: res?.id }
-    }).filter(value => value.label !== 'admin' && value.label !== 'vendor');
+    });
+    console.log('RoleState.roles selector - mappedRoles:', mappedRoles);
+    // Mostrar todos los roles sin filtrar
+    console.log('RoleState.roles selector - todos los roles:', mappedRoles);
+    return mappedRoles;
   }
 
   @Selector()
@@ -58,17 +63,41 @@ export class RoleState {
 
   @Action(GetRoles)
   getRoles(ctx: StateContext<RoleStateModel>, action: GetRoles) {
-    return this.roleService.getRoles(action?.payload).pipe(
+    console.log('GetRoles action ejecutándose...');
+    return this.roleService.getRoles().pipe(
       tap({
-        next: result => { 
+        next: (result: any) => { 
+          console.log('Resultado crudo GetRoles:', result);
+          
+          // Manejar diferentes estructuras de respuesta
+          let rolesData: Role[] = [];
+          let totalCount = 0;
+          
+          if (result?.data) {
+            if (Array.isArray(result.data)) {
+              // Si data es un array directo
+              rolesData = result.data;
+              totalCount = result.data.length;
+            } else if (result.data.roles) {
+              // Si data tiene la estructura {roles: [], pagination: {}}
+              rolesData = result.data.roles;
+              totalCount = result.data.pagination?.total || result.data.roles.length;
+            }
+          }
+          
+          console.log('Roles procesados:', rolesData);
+          
           ctx.patchState({
             role: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data.length
+              data: rolesData,
+              total: totalCount
             }
           });
+          
+          console.log('Estado actualizado con roles:', rolesData);
         },
         error: err => { 
+          console.error('Error al obtener roles:', err);
           throw new Error(err?.error?.message);
         }
       })

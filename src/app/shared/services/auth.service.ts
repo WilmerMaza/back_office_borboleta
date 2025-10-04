@@ -2,6 +2,7 @@ import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Observable, tap } from "rxjs";
 import { environment } from "../../../environments/environment";
+import { APP_CONFIG } from "../config/app.config";
 
 export interface LoginRequest {
   email: string;
@@ -54,14 +55,8 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   login(loginData: LoginRequest): Observable<AuthResponse> {
-    console.log('Login data recibida:', loginData);
-    console.log('URL de login:', `${environment.URL}/users/login`);
-    
-    return this.http.post<AuthResponse>(`${environment.URL}/users/login`, loginData).pipe(
-      tap(response => {
-        console.log('Respuesta del servidor:', response);
-      })
-    );
+   
+    return this.http.post<AuthResponse>(`${environment.URL}${APP_CONFIG.ENDPOINTS.LOGIN}`, loginData);
   }
   
   
