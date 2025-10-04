@@ -37,8 +37,8 @@ export class OrderService {
       })
     );
   }
-
-  // GET /api/orders/all - Obtener TODAS las órdenes sin paginación
+  
+  
   getAllOrders(): Observable<Order[]> {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};

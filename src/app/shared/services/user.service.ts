@@ -38,7 +38,7 @@ export class UserService {
 
   // GET /api/users/:id - Obtener un usuario específico
   getUser(id: number): Observable<User> {
-    return this.http.get<User>(`${environment.URL}/users/${id}`);
+    return this.http.get<User>(`${environment.URL}/users/'permissions',${id}`);
   }
 
   // POST /admin/users - Crear un nuevo usuario
