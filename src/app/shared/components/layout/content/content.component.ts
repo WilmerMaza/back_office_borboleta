@@ -1,4 +1,4 @@
-import { Component, Inject, PLATFORM_ID } from '@angular/core';
+import { Component, Inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { NavigationEnd, Router, RouterModule } from '@angular/router';
 import { NavService } from '../../../services/nav.service';
 import { FooterComponent } from '../../footer/footer.component';
@@ -19,7 +19,7 @@ import { GetBadges } from 'src/app/shared/store/action/sidebar.action';
     templateUrl: './content.component.html',
     styleUrl: './content.component.scss'
 })
-export class ContentComponent {
+export class ContentComponent implements OnInit {
 
   public isBrowser: boolean;
 
@@ -28,14 +28,6 @@ export class ContentComponent {
       private router: Router,
       private store: Store,
       @Inject(PLATFORM_ID) private platformId: Object) {
-    this.navServices.sidebarLoading = true;
-      this.store.dispatch(new GetBadges());
-      this.store.dispatch(new GetNotification());
-      this.store.dispatch(new GetUserDetails()).subscribe({
-        complete: () => {
-          this.navServices.sidebarLoading = false;
-        },
-      });
     this.isBrowser = isPlatformBrowser(this.platformId);
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
@@ -44,6 +36,22 @@ export class ContentComponent {
         }
       }
     })
+  }
+
+  ngOnInit() {
+    this.navServices.sidebarLoading = true;
+    
+    // Esperar a que NGXS rehidrate el token desde localStorage
+    // Esto evita errores 401 al recargar la página
+    setTimeout(() => {
+      this.store.dispatch(new GetBadges());
+      this.store.dispatch(new GetNotification());
+      this.store.dispatch(new GetUserDetails()).subscribe({
+        complete: () => {
+          this.navServices.sidebarLoading = false;
+        },
+      });
+    }, 150);
   }
 
 }

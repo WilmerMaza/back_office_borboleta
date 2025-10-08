@@ -53,9 +53,11 @@ export class UserComponent {
   ngOnInit() {
     combineLatest([this.user$, this.roles$]).subscribe(([user, roles]) => {
       let users = user?.data?.map(element => {
-        // Mapear role_id al nombre real del rol
-        const role = roles?.find(r => r.value === element.role_id);
-        element.role_name = role?.label || element?.role || 'Sin rol';
+        // Usar role_name que ya viene del backend, o hacer fallback al mapeo si no existe
+        if (!element.role_name) {
+          const role = roles?.find(r => r.value === element.role_id);
+          element.role_name = role?.label || (element?.role as any)?.name || 'Sin rol';
+        }
         return element;
       });
       this.tableConfig.data = user ? users : [];

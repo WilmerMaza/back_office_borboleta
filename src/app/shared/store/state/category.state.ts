@@ -76,12 +76,40 @@ export class CategoryState {
   getCategories(ctx: StateContext<CategoryStateModel>, action: GetCategories) {
     return this.categoryService.getCategories(action.payload).pipe(
       tap({
-        next: result => { 
+        next: result => {
+          console.log('📦 Respuesta del backend - Categorías:', result);
+          
+          // Procesar la respuesta según la estructura del backend
+          let categories: Category[] = [];
+          let total = 0;
+          
+          if (result?.data) {
+            const dataObj = result.data as any;
+            
+            // Si viene en result.data.categories (objeto con array de categorías)
+            if (dataObj.categories && Array.isArray(dataObj.categories)) {
+              categories = dataObj.categories;
+              total = dataObj.total || dataObj.pagination?.total || categories.length;
+            }
+            // Si viene directamente en result.data como array
+            else if (Array.isArray(result.data)) {
+              categories = result.data;
+              total = result.total || categories.length;
+            }
+            // Otro formato (objeto)
+            else {
+              categories = result.data || [];
+              total = result.total || 0;
+            }
+          }
+          
+          console.log('✅ Categorías procesadas:', categories.length);
+          console.log('📊 Estructura de primera categoría:', categories[0]);
+          
           ctx.patchState({
             category: {
-              data: result.data || [],
-              total: result?.total || 0,
-        
+              data: categories,
+              total: total
             }
           });
         },
@@ -115,7 +143,18 @@ export class CategoryState {
       tap({
         next: results => { 
           const state = ctx.getState();
-          const result = results.data.find(category => category.id == id);
+          
+          // Obtener el array de categorías según la estructura del backend
+          let categories: Category[] = [];
+          const dataObj = results.data as any;
+          
+          if (dataObj.categories && Array.isArray(dataObj.categories)) {
+            categories = dataObj.categories;
+          } else if (Array.isArray(results.data)) {
+            categories = results.data;
+          }
+          
+          const result = categories.find(category => category.id == id);
           ctx.patchState({
             ...state,
             selectedCategory: result

@@ -41,14 +41,9 @@ export class RoleState {
 
   @Selector()
   static roles(state: RoleStateModel) {
-    console.log('RoleState.roles selector - state.role.data:', state.role.data);
-    const mappedRoles = state.role.data.map(res => { 
+    return state.role.data.map(res => { 
       return { label: res?.name, value: res?.id }
     });
-    console.log('RoleState.roles selector - mappedRoles:', mappedRoles);
-    // Mostrar todos los roles sin filtrar
-    console.log('RoleState.roles selector - todos los roles:', mappedRoles);
-    return mappedRoles;
   }
 
   @Selector()
@@ -63,12 +58,9 @@ export class RoleState {
 
   @Action(GetRoles)
   getRoles(ctx: StateContext<RoleStateModel>, action: GetRoles) {
-    console.log('GetRoles action ejecutándose...');
     return this.roleService.getRoles().pipe(
       tap({
         next: (result: any) => { 
-          console.log('Resultado crudo GetRoles:', result);
-          
           // Manejar diferentes estructuras de respuesta
           let rolesData: Role[] = [];
           let totalCount = 0;
@@ -85,16 +77,12 @@ export class RoleState {
             }
           }
           
-          console.log('Roles procesados:', rolesData);
-          
           ctx.patchState({
             role: {
               data: rolesData,
               total: totalCount
             }
           });
-          
-          console.log('Estado actualizado con roles:', rolesData);
         },
         error: err => { 
           console.error('Error al obtener roles:', err);
@@ -124,7 +112,31 @@ export class RoleState {
 
   @Action(CreateRole)
   create(ctx: StateContext<RoleStateModel>, action: CreateRole) {
-    // Create Role Logic Here
+    return this.roleService.createRole(action.payload).pipe(
+      tap({
+        next: (result: any) => {
+          const state = ctx.getState();
+          
+          // Extraer el rol desde result.data.role
+          const newRole = result?.data?.role || result?.data || result;
+          
+          // Agregar el nuevo rol al estado
+          ctx.patchState({
+            role: {
+              data: [...state.role.data, newRole],
+              total: state.role.total + 1
+            }
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Rol creado exitosamente');
+        },
+        error: err => {
+          console.error('Error al crear rol:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al crear el rol');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(EditRole)
