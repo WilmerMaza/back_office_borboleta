@@ -74,7 +74,7 @@ export class AccountState {
             ctx.patchState({
               user: userData,
               permissions: mappedPermissions,
-              roleName: result.data.role.name
+              roleName: result.data.role?.name || null
             });
           }
         },

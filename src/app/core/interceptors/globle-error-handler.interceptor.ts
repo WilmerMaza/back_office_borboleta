@@ -16,6 +16,11 @@ export class GlobalErrorHandlerInterceptor implements HttpInterceptor {
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
+        // No mostrar notificación para errores 401 (ya los maneja AuthInterceptor)
+        if (error.status === 401) {
+          return throwError(() => error);
+        }
+
         // Handle HTTP errors here
         console.error('HTTP Error:', error.error);
 

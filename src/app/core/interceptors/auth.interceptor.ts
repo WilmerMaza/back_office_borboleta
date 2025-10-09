@@ -41,6 +41,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          // Token inválido o expirado - cerrar sesión automáticamente
           this.notificationService.notification = false;
           this.store.dispatch(new AuthClear());
           this.router.navigate(['/auth/login']);
@@ -53,8 +54,9 @@ export class AuthInterceptor implements HttpInterceptor {
   private isNodeApi(url: string): boolean {
     try {
       const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-      return u.origin === this.NODE_API.replace ('/api', '');
-    } catch { 
+      const backendOrigin = this.NODE_API.replace('/api', '');
+      return u.origin === backendOrigin;
+    } catch (error) { 
       return false; 
     }
   }
@@ -65,7 +67,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // 2) Fallback a localStorage por si acaso
     if (!token && typeof window !== 'undefined') {
-      // Prueba varias llaves típicas
       const candidates = ['access_token', 'token', 'jwt', 'node_jwt'];
       
       for (const key of candidates) {
@@ -77,7 +78,7 @@ export class AuthInterceptor implements HttpInterceptor {
         }
       }
     }
-
+    
     // Solo devuelve si parece JWT (3 segmentos)
     return this.looksLikeJwt(token) ? token : null;
   }

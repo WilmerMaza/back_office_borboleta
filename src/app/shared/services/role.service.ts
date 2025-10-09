@@ -13,31 +13,29 @@ export class RoleService {
   constructor(private http: HttpClient) {}
 
   getRoleModules(): Observable<Module[]> {
-    const token = this.getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
-    return this.http.get<Module[]>(`assets/data/module.json`, { headers });
+    // El interceptor agregará automáticamente el token si es necesario
+    return this.http.get<Module[]>(`assets/data/module.json`);
   }
 
   getRoles(payload?: Params): Observable<RoleModel> {
-    console.log('RoleService.getRoles() ejecutándose...');
-    console.log('URL:', `assets/data/role.json`);
-    console.log('Payload:', payload);
-    
-    const token = this.getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    console.log('Token incluido:', !!token);
-    
+    // El interceptor agregará automáticamente el token
     return this.http.get<RoleModel>(`${environment.URL}/roles`, {
-      params: payload,
-      headers
+      params: payload
     });
   }
 
-  private getToken(): string | null {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('access_token');
-    }
-    return null;
+  createRole(roleData: any): Observable<any> {
+    // El interceptor agregará automáticamente el token
+    return this.http.post(`${environment.URL}/roles`, roleData);
+  }
+
+  updateRole(roleId: number, roleData: any): Observable<any> {
+    // El interceptor agregará automáticamente el token
+    return this.http.put(`${environment.URL}/roles/${roleId}`, roleData);
+  }
+
+  deleteRole(roleId: number): Observable<any> {
+    // El interceptor agregará automáticamente el token
+    return this.http.delete(`${environment.URL}/roles/${roleId}`);
   }
 }

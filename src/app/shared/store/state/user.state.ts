@@ -65,11 +65,13 @@ export class UserState {
           const dataObj = (result as any)?.data;
           const list = Array.isArray(dataObj)
             ? dataObj
-            : Array.isArray(dataObj?.data)
-              ? dataObj.data
-              : Array.isArray(dataObj?.admin_users)
-                ? dataObj.admin_users
-                : [];
+            : Array.isArray(dataObj?.users)
+              ? dataObj.users
+              : Array.isArray(dataObj?.data)
+                ? dataObj.data
+                : Array.isArray(dataObj?.admin_users)
+                  ? dataObj.admin_users
+                  : [];
           const total = (result as any)?.total
             ?? dataObj?.total
             ?? dataObj?.pagination?.total
@@ -124,7 +126,17 @@ export class UserState {
       tap({
         next: results => { 
           const state = ctx.getState();
-          const result = results.data.find(user => user.id == id);
+          // Obtener el array de usuarios correctamente según la estructura del backend
+          const dataObj = (results as any)?.data;
+          const users = Array.isArray(dataObj)
+            ? dataObj
+            : Array.isArray(dataObj?.users)
+              ? dataObj.users
+              : Array.isArray(dataObj?.data)
+                ? dataObj.data
+                : [];
+          
+          const result = users.find((user: any) => user.id == id);
           ctx.patchState({
             ...state,
             selectedUser: result
