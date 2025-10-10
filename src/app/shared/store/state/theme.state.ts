@@ -64,23 +64,45 @@ export class ThemeState {
 
  @Action(GetHomePage)
  getHomePage(ctx: StateContext<ThemesStateModel>, action: GetHomePage) {
-   return this.themeService.getHomePage(action.slug).pipe(
+   return this.themeService.getHomePage(action?.slug?.slug).pipe(
      tap({
-       next: (result) => {
+       next: (result: any) => {
+        // Extraer los valores y el ID del backend
+        const homePageData = {
+          id: result?.id || result?._id || result?.data?.id || 1,
+          ...(result?.values || result?.data?.values || result)
+        };
+        
         ctx.patchState({
-          homePage:result
+          homePage: homePageData
         });
        },
        error: (err) => {
          throw new Error(err?.error?.message);
-       },
+       }
      })
    );
  }
 
+
  @Action(UpdateHomePage)
   updateHomePage(ctx: StateContext<ThemesStateModel>, action: UpdateHomePage) {
-   // Update Home Page Logic Here
+    return this.themeService.updateHomePage(action.id, action.payload).pipe(
+      tap({
+        next: (result) => {
+          this.notificationService.showSuccess(result?.message || 'Configuración guardada exitosamente');
+          
+          // Actualizar el estado local
+          ctx.patchState({
+            homePage: result.data?.values || action.payload
+          });
+        },
+        error: (err) => {
+          this.notificationService.showError(err?.error?.message || 'Error al guardar la configuración');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }  
 
 }

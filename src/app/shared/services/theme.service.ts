@@ -16,8 +16,27 @@ export class ThemeService {
     return this.http.get<ThemesModel>(`assets/data/theme.json`);
   }
 
-  getHomePage(payload?: Params): Observable<any> {
-    return this.http.get(`assets/data/home/${payload!["slug"]}.json`);
+
+  getHomePage(slug?: string): Observable<any> {
+  
+    return this.http.get(`${environment.URL}/setting-theme/${slug}`);
+  }
+
+  // PUT /api/setting-theme/{slug} - Actualizar configuración de tema
+  updateHomePage(pageId: number, payload: any): Observable<any> {
+    // Extraer slug y content del payload
+    const slug = payload.slug || 'fashion_one';
+    const content = payload.content;
+    
+    // Estructura correcta que espera el backend
+    const body = {
+      name: 'themeOptions',
+      slug: slug,
+      content: content
+    };
+    
+    // El interceptor agregará automáticamente el token
+    return this.http.put(`${environment.URL}/setting-theme/${slug}`, body);
   }
   
 }
