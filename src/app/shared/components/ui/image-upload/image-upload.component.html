@@ -1,7 +1,7 @@
 <ul class="image-select-list cursor-pointer">
    <li class="choosefile-input" (click)="MediaModal.openModal()">
       <div class="media-img-box">
-         <img src="assets/images/add-image.png" class="img-fluid add-icon">
+         <img src="assets/images/add-image.png" class="img-fluid add-icon" alt="Agregar imagen">
       </div> 
    </li>
 
@@ -14,7 +14,7 @@
                }@else {
                   <img [src]="getMimeTypeImage(img.mime_type)" class="img-fluid" alt="image">
                }
-               <a href="javascript:void(0)" class="remove-icon" id="remove-icon{{i}}" (click)="remove(i, 'multiple');"><i class="ri-close-line text-white"></i></a>
+               <a href="javascript:void(0)" class="remove-icon" id="remove-icon{{i}}" (click)="remove(i, 'multiple');" [attr.aria-label]="'Eliminar imagen'"><i class="ri-close-line text-white"></i></a>
             </div>
             <h6>{{ img?.file_name }}</h6>
          }
@@ -29,7 +29,7 @@
             }@else {
                <img [src]="getMimeTypeImage(showImage.mime_type)" class="img-fluid" alt="image">
             }
-            <a href="javascript:void(0)" class="remove-icon" (click)="remove(showImage.id, 'single')"><i class="ri-close-line text-white"></i></a>
+            <a href="javascript:void(0)" class="remove-icon" (click)="remove(showImage.id, 'single')" [attr.aria-label]="'Eliminar imagen'"><i class="ri-close-line text-white"></i></a>
          </div>
          <h6>{{ showImage.file_name }}</h6>
       </li>
@@ -41,9 +41,9 @@
              @if(videoType.includes(showImageUrl.substring(showImageUrl.lastIndexOf('.') + 1))){
                <img src="assets/images/video.png" class="img-fluid" alt="image">
             }@else {
-               <img [src]="StorageURL+showImageUrl" alt="image" class="img-fluid">
+               <img [src]="showImageUrl.startsWith('http') ? showImageUrl : StorageURL+showImageUrl" alt="image" class="img-fluid">
             }
-            <a href="javascript:void(0)" class="remove-icon" (click)="remove(1, 'single_image_url')"><i class="ri-close-line text-white"></i></a>
+            <a href="javascript:void(0)" class="remove-icon" (click)="remove(1, 'single_image_url')" [attr.aria-label]="'Eliminar imagen'"><i class="ri-close-line text-white"></i></a>
          </div>
       </li>
    }

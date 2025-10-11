@@ -20,13 +20,19 @@ export class AttachmentService {
   }
 
   createAttachment(files: File[]): Observable<any> {
+    console.log('📤 AttachmentService.createAttachment() - Subiendo archivos:', files.length);
+    console.log('📁 Archivos a subir:', files.map(f => `${f.name} (${f.size} bytes)`));
+    
     // Usar el endpoint de upload para subir archivos
     const formData = new FormData();
     files.forEach(file => {
       formData.append('files[]', file);
     });
     
+    console.log('🌐 URL del endpoint:', `${environment.URL}/attachments/upload/files`);
+    
     // Usar el endpoint de upload que ya existe
+    // El interceptor agregará automáticamente el token
     return this.http.post(`${environment.URL}/attachments/upload/files`, formData);
   }
 

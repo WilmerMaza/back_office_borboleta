@@ -49,14 +49,23 @@ export class AttachmentState {
 
   @Action(CreateAttachment)
   create(ctx: StateContext<AttachmentStateModel>, action: CreateAttachment) {
+    console.log('🎬 CreateAttachment Action - Iniciando subida');
+    console.log('📦 Cantidad de archivos:', action.payload.length);
+    
     return this.attachmentService.createAttachment(action.payload).pipe(
       tap({
-        next: result => { 
+        next: result => {
+          console.log('✅ Respuesta del backend:', result);
+          console.log('📸 Archivos subidos exitosamente');
+          
           this.notificationService.showSuccess('Archivos subidos correctamente');
           // Recargar la lista de attachments
           this.store.dispatch(new GetAttachments({ page: 1, paginate: 15 }));
         },
-        error: err => { 
+        error: err => {
+          console.error('❌ Error al subir archivos:', err);
+          console.error('📋 Detalles del error:', err?.error);
+          
           this.notificationService.showError(err?.error?.message || 'Error al subir archivos');
           throw new Error(err?.error?.message);
         }
