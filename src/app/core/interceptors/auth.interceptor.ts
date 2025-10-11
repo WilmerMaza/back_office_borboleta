@@ -6,11 +6,12 @@ import { NotificationService } from "../../shared/services/notification.service"
 import { Observable, catchError, throwError } from "rxjs";
 import { AuthClear } from "../../shared/store/action/auth.action";
 import { isPlatformBrowser, isPlatformServer } from "@angular/common";
+import { environment } from "src/environments/environment.development";
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
 
-  private readonly NODE_API = 'http://localhost:3001';
+  private readonly NODE_API = environment.URL;
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -40,6 +41,7 @@ export class AuthInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
+          // Token inválido o expirado - cerrar sesión automáticamente
           this.notificationService.notification = false;
           this.store.dispatch(new AuthClear());
           this.router.navigate(['/auth/login']);
@@ -52,8 +54,9 @@ export class AuthInterceptor implements HttpInterceptor {
   private isNodeApi(url: string): boolean {
     try {
       const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-      return u.origin === this.NODE_API && u.pathname.startsWith('/api/');
-    } catch { 
+      const backendOrigin = this.NODE_API.replace('/api', '');
+      return u.origin === backendOrigin;
+    } catch (error) { 
       return false; 
     }
   }
@@ -64,7 +67,6 @@ export class AuthInterceptor implements HttpInterceptor {
 
     // 2) Fallback a localStorage por si acaso
     if (!token && typeof window !== 'undefined') {
-      // Prueba varias llaves típicas
       const candidates = ['access_token', 'token', 'jwt', 'node_jwt'];
       
       for (const key of candidates) {
@@ -76,7 +78,7 @@ export class AuthInterceptor implements HttpInterceptor {
         }
       }
     }
-
+    
     // Solo devuelve si parece JWT (3 segmentos)
     return this.looksLikeJwt(token) ? token : null;
   }

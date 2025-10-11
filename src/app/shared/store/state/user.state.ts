@@ -6,7 +6,9 @@ import { GetUsers, CreateUser, EditUser, UpdateUser,
           CreateUserAddress, ImportUser, ExportUser } from "../action/user.action";
 import { User } from "../../interface/user.interface";
 import { UserService } from "../../services/user.service";
+import { AddressService } from "../../services/address.service";
 import { NotificationService } from "../../services/notification.service";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
 
 export class UserStateModel {
   user = {
@@ -31,7 +33,9 @@ export class UserState {
   
   constructor(private store: Store,
     private notificationService: NotificationService,
-    private userService: UserService) {}
+    private userService: UserService,
+    private addressService: AddressService,
+    private modalService: NgbModal) {}
 
   @Selector()
   static user(state: UserStateModel) {
@@ -40,9 +44,12 @@ export class UserState {
 
   @Selector()
   static users(state: UserStateModel) {
-    return state.user.data.map(user => {
-      return { label: user?.name, value: user?.id }
-    });
+    if (state.user?.data && Array.isArray(state.user.data)) {
+      return state.user.data.map(user => {
+        return { label: user?.name, value: user?.id }
+      });
+    }
+    return [];
   }
 
   @Selector()
@@ -55,15 +62,39 @@ export class UserState {
     return this.userService.getUsers(action?.payload).pipe(
       tap({
         next: result => {
+          const dataObj = (result as any)?.data;
+          const list = Array.isArray(dataObj)
+            ? dataObj
+            : Array.isArray(dataObj?.users)
+              ? dataObj.users
+              : Array.isArray(dataObj?.data)
+                ? dataObj.data
+                : Array.isArray(dataObj?.admin_users)
+                  ? dataObj.admin_users
+                  : [];
+          const total = (result as any)?.total
+            ?? dataObj?.total
+            ?? dataObj?.pagination?.total
+            ?? list.length
+            ?? 0;
+
           ctx.patchState({
             user: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data?.length
+              data: list,
+              total: total
             }
           });
         },
         error: err => { 
-          throw new Error(err?.error?.message);
+          console.error('Error al obtener usuarios:', err);
+          // No lanzar error para evitar romper la aplicación
+          // En su lugar, retornar un array vacío
+          ctx.patchState({
+            user: {
+              data: [],
+              total: 0
+            }
+          });
         }
       })
     );
@@ -71,7 +102,22 @@ export class UserState {
 
   @Action(CreateUser)
   create(ctx: StateContext<UserStateModel>, action: CreateUser) {
-    // Create User Logic Here
+    // Usar el role_id del formulario, no forzar 'consumer'
+    const userData = { ...action.payload };
+    return this.userService.createUser(userData).pipe(
+      tap({
+        next: result => { 
+          // Recargar la lista de usuarios
+          this.store.dispatch(new GetUsers({ status: 1, paginate: 15 }));
+          // Cerrar el modal
+          this.modalService.dismissAll();
+        },
+        error: err => { 
+          console.error('Error al crear usuario:', err);
+          throw new Error(err?.error?.message || 'Error al crear el usuario');
+        }
+      })
+    );
   }
 
   @Action(EditUser)
@@ -80,7 +126,17 @@ export class UserState {
       tap({
         next: results => { 
           const state = ctx.getState();
-          const result = results.data.find(user => user.id == id);
+          // Obtener el array de usuarios correctamente según la estructura del backend
+          const dataObj = (results as any)?.data;
+          const users = Array.isArray(dataObj)
+            ? dataObj
+            : Array.isArray(dataObj?.users)
+              ? dataObj.users
+              : Array.isArray(dataObj?.data)
+                ? dataObj.data
+                : [];
+          
+          const result = users.find((user: any) => user.id == id);
           ctx.patchState({
             ...state,
             selectedUser: result
@@ -105,7 +161,26 @@ export class UserState {
 
   @Action(DeleteUser)
   delete(ctx: StateContext<UserStateModel>, { id }: DeleteUser) {
-    // Delete User Logic Here
+    return this.userService.deleteUser(id).pipe(
+      tap({
+        next: () => {
+          // Actualizar la lista de usuarios después de eliminar
+          const currentState = ctx.getState();
+          const updatedUsers = currentState.user.data.filter(user => user.id !== id);
+          ctx.patchState({
+            user: {
+              ...currentState.user,
+              data: updatedUsers,
+              total: updatedUsers.length
+            }
+          });
+        },
+        error: err => {
+          console.error('Error al eliminar usuario:', err);
+          this.notificationService.notification = true;
+        }
+      })
+    );
   }
 
   @Action(DeleteAllUser)
@@ -125,7 +200,22 @@ export class UserState {
 
   @Action(CreateUserAddress)
   createUserAddress(ctx: StateContext<UserStateModel>, action: CreateUserAddress) {
-    // Create User Address Logic Here
+    console.log('CreateUserAddress action ejecutada con payload:', action.payload);
+    return this.addressService.createAddress(action.payload).pipe(
+      tap({
+        next: result => { 
+          console.log('Dirección creada exitosamente:', result);
+          // Recargar la lista de usuarios para obtener las nuevas direcciones
+          this.store.dispatch(new GetUsers({ role: 'consumer', status: 1, paginate: 15 }));
+          // Cerrar el modal
+          this.modalService.dismissAll();
+        },
+        error: err => { 
+          console.error('Error al crear dirección:', err);
+          throw new Error(err?.error?.message || 'Error al crear la dirección');
+        }
+      })
+    );
   }
 
 }

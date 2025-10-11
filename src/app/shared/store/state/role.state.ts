@@ -43,7 +43,7 @@ export class RoleState {
   static roles(state: RoleStateModel) {
     return state.role.data.map(res => { 
       return { label: res?.name, value: res?.id }
-    }).filter(value => value.label !== 'admin' && value.label !== 'vendor');
+    });
   }
 
   @Selector()
@@ -58,17 +58,34 @@ export class RoleState {
 
   @Action(GetRoles)
   getRoles(ctx: StateContext<RoleStateModel>, action: GetRoles) {
-    return this.roleService.getRoles(action?.payload).pipe(
+    return this.roleService.getRoles().pipe(
       tap({
-        next: result => { 
+        next: (result: any) => { 
+          // Manejar diferentes estructuras de respuesta
+          let rolesData: Role[] = [];
+          let totalCount = 0;
+          
+          if (result?.data) {
+            if (Array.isArray(result.data)) {
+              // Si data es un array directo
+              rolesData = result.data;
+              totalCount = result.data.length;
+            } else if (result.data.roles) {
+              // Si data tiene la estructura {roles: [], pagination: {}}
+              rolesData = result.data.roles;
+              totalCount = result.data.pagination?.total || result.data.roles.length;
+            }
+          }
+          
           ctx.patchState({
             role: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data.length
+              data: rolesData,
+              total: totalCount
             }
           });
         },
         error: err => { 
+          console.error('Error al obtener roles:', err);
           throw new Error(err?.error?.message);
         }
       })
@@ -95,7 +112,31 @@ export class RoleState {
 
   @Action(CreateRole)
   create(ctx: StateContext<RoleStateModel>, action: CreateRole) {
-    // Create Role Logic Here
+    return this.roleService.createRole(action.payload).pipe(
+      tap({
+        next: (result: any) => {
+          const state = ctx.getState();
+          
+          // Extraer el rol desde result.data.role
+          const newRole = result?.data?.role || result?.data || result;
+          
+          // Agregar el nuevo rol al estado
+          ctx.patchState({
+            role: {
+              data: [...state.role.data, newRole],
+              total: state.role.total + 1
+            }
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Rol creado exitosamente');
+        },
+        error: err => {
+          console.error('Error al crear rol:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al crear el rol');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(EditRole)

@@ -119,12 +119,41 @@ export class OrderState {
 
   @Action(Checkout)
   checkout(ctx: StateContext<OrderStateModel>, action: Checkout) {
-    // Checkout Logic Here
+    console.log('Checkout action ejecutada con payload:', action.payload);
+    return this.orderService.checkout(action.payload).pipe(
+      tap({
+        next: result => { 
+          console.log('Checkout exitoso:', result);
+          ctx.patchState({
+            checkout: result
+          });
+        },
+        error: err => { 
+          console.error('Error en checkout:', err);
+          throw new Error(err?.error?.message || 'Error en el checkout');
+        }
+      })
+    );
   }
 
   @Action(PlaceOrder)
   placeOrder(ctx: StateContext<OrderStateModel>, action: PlaceOrder) {
-    // Place Order Logic Here
+    console.log('PlaceOrder action ejecutada con payload:', action.payload);
+    return this.orderService.placeOrder(action.payload).pipe(
+      tap({
+        next: result => { 
+          console.log('Orden creada exitosamente:', result);
+          // Limpiar el carrito después de crear la orden
+          this.store.dispatch(new Clear());
+          // Redirigir a la lista de órdenes o mostrar mensaje de éxito
+          this.router.navigate(['/order/list']);
+        },
+        error: err => { 
+          console.error('Error al crear la orden:', err);
+          throw new Error(err?.error?.message || 'Error al crear la orden');
+        }
+      })
+    );
   }
 
   @Action(UpdateOrderStatus)
