@@ -123,16 +123,21 @@ export class CategoryState {
   @Action(CreateCategory)
   create(ctx: StateContext<CategoryStateModel>, action: CreateCategory) {
     return this.categoryService.createCategory(action.payload).pipe(
-      tap((response: Category) => {
+      tap((response: any) => {
+      
+        // Extraer la categoría de la respuesta del backend
+        const newCategory = response?.data?.category || response?.data || response;
+       
         const state = ctx.getState();
         ctx.setState({
           ...state,
           category: {
-            data: [...state.category.data, response],
+            data: [...state.category.data, newCategory],
             total: state.category.total + 1
           }
         });
-        this.notificationService.showSuccess('Categoría creada exitosamente');
+        
+        this.notificationService.showSuccess(response?.message || 'Categoría creada exitosamente');
       })
     );
   }
@@ -170,10 +175,17 @@ export class CategoryState {
   @Action(UpdateCategory)
   update(ctx: StateContext<CategoryStateModel>, action: UpdateCategory) {
     return this.categoryService.updateCategory(action.payload, action.id).pipe(
-      tap((response: Category) => {
+      tap((response: any) => {
+        console.log('📦 Respuesta de actualizar categoría:', response);
+        
+        // Extraer la categoría actualizada de la respuesta del backend
+        const updatedCategory = response?.data?.category || response?.data || response;
+        
+        console.log('✅ Categoría actualizada extraída:', updatedCategory);
+        
         const state = ctx.getState();
         const updatedData = state.category.data.map(category => 
-          category.id === action.id ? response : category
+          category.id === action.id ? updatedCategory : category
         );
         
         ctx.setState({
@@ -182,10 +194,10 @@ export class CategoryState {
             data: updatedData,
             total: state.category.total
           },
-          selectedCategory: response
+          selectedCategory: updatedCategory
         });
         
-        this.notificationService.showSuccess('Categoría actualizada exitosamente');
+        this.notificationService.showSuccess(response?.message || 'Categoría actualizada exitosamente');
       })
     );
   }
@@ -193,7 +205,9 @@ export class CategoryState {
   @Action(DeleteCategory)
   delete(ctx: StateContext<CategoryStateModel>, action: DeleteCategory) {
     return this.categoryService.deleteCategory(action.id).pipe(
-      tap(() => {
+      tap((response: any) => {
+        console.log('📦 Respuesta de eliminar categoría:', response);
+        
         const state = ctx.getState();
         const filteredData = state.category.data.filter(category => category.id !== action.id);
         
@@ -206,7 +220,7 @@ export class CategoryState {
           selectedCategory: null
         });
         
-        this.notificationService.showSuccess('Categoría eliminada exitosamente');
+        this.notificationService.showSuccess(response?.message || 'Categoría eliminada exitosamente');
       })
     );
   }
