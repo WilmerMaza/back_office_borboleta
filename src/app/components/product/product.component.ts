@@ -112,13 +112,6 @@ export class ProductComponent {
     this.store.dispatch(new GetBrands({ status: 1 }))
     this.store.dispatch(new GetStores({ status: 1 }))
     this.product$.subscribe(product => {
-      console.log('Products data from backend:', product);
-      if (product?.data?.length) {
-        console.log('First product:', product.data[0]);
-        console.log('product_thumbnail:', product.data[0].product_thumbnail);
-        console.log('product_galleries:', product.data[0].product_galleries);
-      }
-      
       let products = product?.data?.filter((element: Product) => {
         element.stock = element.stock_status ? `<div class="status-${element.stock_status}"><span>${element.stock_status.replace(/_/g, " ")}</span></div>` : '-';
         element.store_name = element?.store ? element?.store?.store_name : '-';
@@ -126,6 +119,26 @@ export class ProductComponent {
         // Si no hay product_thumbnail pero sí hay product_galleries, usar la primera imagen
         if (!element.product_thumbnail && element.product_galleries && element.product_galleries.length > 0) {
           element.product_thumbnail = element.product_galleries[0];
+        }
+        
+        // Calcular el precio de display para productos variables
+        if (element.type === 'classified' && element.variations && element.variations.length > 0) {
+          const prices = element.variations.map(v => {
+            const finalPrice = v.discount 
+              ? v.price - (v.price * v.discount / 100)
+              : v.price;
+            return finalPrice;
+          });
+          
+          const minPrice = Math.min(...prices);
+          const maxPrice = Math.max(...prices);
+          
+          // Asignar el precio mínimo al producto principal
+          element.price = minPrice;
+          element.sale_price = minPrice;
+          
+          // Agregar una propiedad para saber si es rango de precios
+          (element as any).isPriceRange = minPrice !== maxPrice;
         }
         
         return element;
@@ -173,7 +186,6 @@ export class ProductComponent {
 
   approve(data: Product) {
     if (!data || !data.id) {
-      console.error('Error: Product ID is undefined or null', data);
       return;
     }
     this.store.dispatch(new ApproveProductStatus(data.id, data.is_approved));
@@ -181,7 +193,6 @@ export class ProductComponent {
 
   status(data: Product) {
     if (!data || !data.id) {
-      console.error('Error: Product ID is undefined or null', data);
       return;
     }
     this.store.dispatch(new UpdateProductStatus(data.id, data.status));
@@ -189,7 +200,6 @@ export class ProductComponent {
 
   delete(data: Product) {
     if (!data || !data.id) {
-      console.error('Error: Product ID is undefined or null', data);
       return;
     }
     this.store.dispatch(new DeleteProduct(data.id));

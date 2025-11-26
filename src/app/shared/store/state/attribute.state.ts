@@ -71,11 +71,24 @@ export class AttributeState {
   getAttributes(ctx: StateContext<AttributeStateModel>, action: GetAttributes) {
     return this.attributeService.getAttributes(action.payload).pipe(
       tap({
-        next: result => { 
+        next: result => {
+          let attributes: Attribute[] = [];
+          let total = 0;
+          
+          if (result?.data) {
+            if (Array.isArray(result.data)) {
+              attributes = result.data;
+              total = result.total || attributes.length;
+            } else {
+              attributes = result.data;
+              total = result.total || 0;
+            }
+          }
+          
           ctx.patchState({
             attribute: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data.length
+              data: attributes,
+              total: total
             }
           });
         },
@@ -106,16 +119,57 @@ export class AttributeState {
 
   @Action(CreateAttribute)
   create(ctx: StateContext<AttributeStateModel>, action: CreateAttribute) {
-    // Create Attribute Logic Here
+    return this.attributeService.createAttribute(action.payload).pipe(
+      tap({
+        next: (result: any) => {
+          // Extraer el atributo de la respuesta del backend
+          const newAttribute = result?.data?.attribute || result?.data || result;
+          
+          const state = ctx.getState();
+          ctx.setState({
+            ...state,
+            attribute: {
+              data: [...state.attribute.data, newAttribute],
+              total: state.attribute.total + 1
+            }
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Atributo creado exitosamente');
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al crear el atributo');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(EditAttribute)
   edit(ctx: StateContext<AttributeStateModel>, { id }: EditAttribute) {
+    const state = ctx.getState();
+    
+    // Primero intentar obtener del estado local
+    const localAttribute = state.attribute.data.find(attribute => attribute.id == id);
+    
+    if (localAttribute) {
+      ctx.patchState({
+        ...state,
+        selectedAttribute: localAttribute
+      });
+      return;
+    }
+    
+    // Si no está en el estado local, buscar todos los atributos
     return this.attributeService.getAttributes().pipe(
       tap({
-        next: results => { 
-          const state = ctx.getState();
-          const result = results.data.find(attribute => attribute.id == id);
+        next: results => {
+          let attributes: Attribute[] = [];
+          if (Array.isArray(results.data)) {
+            attributes = results.data;
+          }
+          
+          const result = attributes.find(attribute => attribute.id == id);
+          
           ctx.patchState({
             ...state,
             selectedAttribute: result
@@ -130,22 +184,122 @@ export class AttributeState {
 
   @Action(UpdateAttribute)
   update(ctx: StateContext<AttributeStateModel>, { payload, id }: UpdateAttribute) {
-    // Update Attribute Logic Here
+    return this.attributeService.updateAttribute(payload, id).pipe(
+      tap({
+        next: (result: any) => {
+          // Extraer el atributo actualizado de la respuesta del backend
+          const updatedAttribute = result?.data?.attribute || result?.data || result;
+          
+          const state = ctx.getState();
+          const updatedData = state.attribute.data.map(attribute => 
+            attribute.id === id ? updatedAttribute : attribute
+          );
+          
+          ctx.setState({
+            ...state,
+            attribute: {
+              data: updatedData,
+              total: state.attribute.total
+            },
+            selectedAttribute: updatedAttribute
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Atributo actualizado exitosamente');
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el atributo');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(UpdateAttributeStatus)
   updateStatus(ctx: StateContext<AttributeStateModel>, { id, status }: UpdateAttributeStatus) {
-    // Update Attribute Status Logic Here
+    return this.attributeService.updateAttributeStatus(id, status).pipe(
+      tap({
+        next: (result: any) => {
+          const state = ctx.getState();
+          const updatedData = state.attribute.data.map(attribute => 
+            attribute.id === id ? { ...attribute, status } : attribute
+          );
+          
+          ctx.setState({
+            ...state,
+            attribute: {
+              data: updatedData,
+              total: state.attribute.total
+            }
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Estado actualizado exitosamente');
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el estado');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteAttribute)
   delete(ctx: StateContext<AttributeStateModel>, { id }: DeleteAttribute) {
-    // Delete Attribute Logic Here
+    return this.attributeService.deleteAttribute(id).pipe(
+      tap({
+        next: (result: any) => {
+          const state = ctx.getState();
+          const filteredData = state.attribute.data.filter(attribute => attribute.id !== id);
+          
+          ctx.setState({
+            ...state,
+            attribute: {
+              data: filteredData,
+              total: state.attribute.total - 1
+            },
+            selectedAttribute: null
+          });
+          
+          this.notificationService.showSuccess(result?.message || 'Atributo eliminado exitosamente');
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al eliminar el atributo');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteAllAttribute)
   deleteAll(ctx: StateContext<AttributeStateModel>, { ids }: DeleteAllAttribute) {
-    // Delete ALl Attribute Logic Here
+    return this.attributeService.deleteMultipleAttributes(ids).pipe(
+      tap({
+        next: (result: any) => {
+          const state = ctx.getState();
+          const filteredData = state.attribute.data.filter(
+            attribute => !ids.includes(attribute.id!)
+          );
+          
+          ctx.setState({
+            ...state,
+            attribute: {
+              data: filteredData,
+              total: state.attribute.total - ids.length
+            }
+          });
+          
+          const deletedCount = result?.data?.deleted || ids.length;
+          this.notificationService.showSuccess(
+            result?.message || `${deletedCount} atributos eliminados exitosamente`
+          );
+        },
+        error: err => {
+          this.notificationService.showError(
+            err?.error?.message || 'Error al eliminar los atributos'
+          );
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(ImportAtribute)

@@ -17,7 +17,6 @@ export class CartService {
 
   updateQty(): void {
     // Método para sincronizar cantidad con el backend si es necesario
-    console.log('Actualizando cantidad en el carrito');
   }
 
 }

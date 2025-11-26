@@ -133,30 +133,50 @@ export class ProductState {
   @Action(CreateProduct)
   createProduct(ctx: StateContext<ProductStateModel>, action: CreateProduct) {
     return this.productService.createProduct(action.payload).pipe(
-      tap((response: Product) => {
-        const state = ctx.getState();
-        ctx.setState({
-          ...state,
-          product: {
-            data: [...state.product.data, response],
-            total: state.product.total + 1
-          }
-        });
-        this.notificationService.showSuccess('Producto creado exitosamente');
+      tap({
+        next: (response: any) => {
+          // Extraer el producto creado de la respuesta del backend
+          const newProduct = response?.data?.product || response?.data || response;
+          
+          const state = ctx.getState();
+          ctx.setState({
+            ...state,
+            product: {
+              data: [...state.product.data, newProduct],
+              total: state.product.total + 1
+            }
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Producto creado exitosamente');
+        },
+        error: (err) => {
+          this.notificationService.showError(err?.error?.message || 'Error al crear el producto');
+          throw new Error(err?.error?.message);
+        }
       })
     );
   }
 
   @Action(EditProduct)
   edit(ctx: StateContext<ProductStateModel>, { id }: EditProduct) {
-    return this.productService.getProducts().pipe(
+    return this.productService.getProductById(id).pipe(
       tap({
-        next: results => {
+        next: (result: any) => {
+          // Extraer el producto de la respuesta del backend
+          // Manejar diferentes estructuras: { data: { product: ... } }, { data: ... }, o el producto directamente
+          let product;
+          if (result?.data?.product) {
+            product = result.data.product;
+          } else if (result?.data) {
+            product = result.data;
+          } else {
+            product = result;
+          }
+          
           const state = ctx.getState();
-          const result = results.data.find(product => product.id == id);
           ctx.patchState({
             ...state,
-            selectedProduct: result
+            selectedProduct: product
           });
         },
         error: err => {
@@ -170,18 +190,23 @@ export class ProductState {
   update(ctx: StateContext<ProductStateModel>, action: UpdateProduct) {
     return this.productService.updateProduct(action.payload, action.id).pipe(
       tap({
-        next: (result) => {
+        next: (result: any) => {
+          // Extraer el producto actualizado de la respuesta del backend
+          const updatedProduct = result?.data?.product || result?.data || result;
+          
           const state = ctx.getState();
           ctx.patchState({
             product: {
               ...state.product,
-              data: state.product.data.map(p => p.id === action.id ? action.payload : p)
-            }
+              data: state.product.data.map(p => p.id === action.id ? updatedProduct : p)
+            },
+            selectedProduct: updatedProduct
           });
-          this.notificationService.showSuccess('Producto actualizado exitosamente');
+          
+          this.notificationService.showSuccess(result?.message || 'Producto actualizado exitosamente');
         },
         error: (err) => {
-          this.notificationService.showError('Error al actualizar el producto');
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el producto');
           throw new Error(err?.error?.message);
         }
       })

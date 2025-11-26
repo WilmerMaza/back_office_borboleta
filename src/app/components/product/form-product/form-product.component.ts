@@ -676,17 +676,6 @@ export class FormProductComponent {
         : [];
     });
 
-    // Monitorear categorías para debug
-    this.category$.subscribe((categories) => {
-      console.log("=== CATEGORIES DEBUG ===");
-      console.log("Categories loaded:", categories);
-      console.log("Categories data:", categories?.data);
-      console.log("Categories count:", categories?.data?.length);
-      console.log("Categories data type:", typeof categories?.data);
-      console.log("Categories data is array:", Array.isArray(categories?.data));
-      console.log("=== END CATEGORIES DEBUG ===");
-    });
-
     this.setting$.subscribe((setting) => {
       if (setting?.activation?.multivendor) {
         this.form.controls["store_id"].setValidators([Validators.required]);
@@ -995,22 +984,18 @@ export class FormProductComponent {
   }
 
   selectThumbnail(data: Attachment) {
-    console.log('selectThumbnail called with:', data);
     if (!Array.isArray(data)) {
       this.form.controls["product_thumbnail_id"].setValue(
         data ? data?.id : null
       );
-      console.log('product_thumbnail_id set to:', data ? data?.id : null);
     }
   }
 
   selectImages(data: Attachment) {
-    console.log('selectImages called with:', data);
     let ids = Array.isArray(data)
       ? data?.map((image) => image && image?.id)
       : [];
     this.form.controls["product_galleries_id"].setValue(ids);
-    console.log('product_galleries_id set to:', ids);
   }
 
   selectSizeImage(data: Attachment) {
@@ -1161,10 +1146,6 @@ export class FormProductComponent {
       sale_price: (price - (price * discount) / 100).toFixed(2),
       slug: this.slugify(this.form.value.name),
     };
-
-    console.log('Product data being sent:', data);
-    console.log('product_thumbnail_id:', data.product_thumbnail_id);
-    console.log('product_galleries_id:', data.product_galleries_id);
 
     let action = new CreateProduct(data);
 

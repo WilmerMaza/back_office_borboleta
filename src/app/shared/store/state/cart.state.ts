@@ -30,7 +30,6 @@ export class CartState implements NgxsOnInit {
     private store: Store) {}
 
   ngxsOnInit(ctx: StateContext<CartStateModel>) {
-    console.log('CartState: ngxsOnInit() se ejecuta');
     this.loadFromLocalStorage(ctx);
   }
 
@@ -251,7 +250,6 @@ export class CartState implements NgxsOnInit {
         const cartData = localStorage.getItem('cart');
         if (cartData) {
           const parsedData = JSON.parse(cartData);
-          console.log('loadFromLocalStorage(): Si hay datos - restaura el carrito:', parsedData);
           
           ctx.patchState({
             items: parsedData.items || [],
@@ -259,15 +257,10 @@ export class CartState implements NgxsOnInit {
             is_digital_only: parsedData.is_digital_only || null,
             sidebarCartOpen: false
           });
-        } else {
-          console.log('loadFromLocalStorage(): Si no hay datos - carrito vacío');
-          // El carrito ya está vacío por defecto, no necesitamos hacer nada
         }
       } catch (error) {
-        console.error('Error al cargar carrito desde localStorage:', error);
         // Limpiar datos corruptos
         localStorage.removeItem('cart');
-        console.log('loadFromLocalStorage(): Datos corruptos eliminados - carrito vacío');
       }
     }
   }
@@ -283,9 +276,7 @@ export class CartState implements NgxsOnInit {
         };
         
         localStorage.setItem('cart', JSON.stringify(cartData));
-        console.log('Carrito sincronizado con localStorage:', cartData);
       } catch (error) {
-        console.error('Error al sincronizar carrito con localStorage:', error);
       }
     }
   }

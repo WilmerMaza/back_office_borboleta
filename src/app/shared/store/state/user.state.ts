@@ -86,7 +86,6 @@ export class UserState {
           });
         },
         error: err => { 
-          console.error('Error al obtener usuarios:', err);
           // No lanzar error para evitar romper la aplicación
           // En su lugar, retornar un array vacío
           ctx.patchState({
@@ -113,7 +112,6 @@ export class UserState {
           this.modalService.dismissAll();
         },
         error: err => { 
-          console.error('Error al crear usuario:', err);
           throw new Error(err?.error?.message || 'Error al crear el usuario');
         }
       })
@@ -176,7 +174,6 @@ export class UserState {
           });
         },
         error: err => {
-          console.error('Error al eliminar usuario:', err);
           this.notificationService.notification = true;
         }
       })
@@ -200,18 +197,15 @@ export class UserState {
 
   @Action(CreateUserAddress)
   createUserAddress(ctx: StateContext<UserStateModel>, action: CreateUserAddress) {
-    console.log('CreateUserAddress action ejecutada con payload:', action.payload);
     return this.addressService.createAddress(action.payload).pipe(
       tap({
         next: result => { 
-          console.log('Dirección creada exitosamente:', result);
           // Recargar la lista de usuarios para obtener las nuevas direcciones
           this.store.dispatch(new GetUsers({ role: 'consumer', status: 1, paginate: 15 }));
           // Cerrar el modal
           this.modalService.dismissAll();
         },
         error: err => { 
-          console.error('Error al crear dirección:', err);
           throw new Error(err?.error?.message || 'Error al crear la dirección');
         }
       })

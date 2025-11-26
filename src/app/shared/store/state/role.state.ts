@@ -85,7 +85,6 @@ export class RoleState {
           });
         },
         error: err => { 
-          console.error('Error al obtener roles:', err);
           throw new Error(err?.error?.message);
         }
       })
@@ -131,7 +130,6 @@ export class RoleState {
           this.notificationService.showSuccess(result?.message || 'Rol creado exitosamente');
         },
         error: err => {
-          console.error('Error al crear rol:', err);
           this.notificationService.showError(err?.error?.message || 'Error al crear el rol');
           throw new Error(err?.error?.message);
         }
