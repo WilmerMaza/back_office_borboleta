@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap, map } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Params } from '../interface/core.interface';
 import { OrderModel, Order } from '../interface/order.interface';
@@ -18,20 +18,10 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando órdenes con payload:', payload);
-    console.log('URL:', `${environment.URL}/orders`);
-    console.log('Token incluido:', !!token);
-    
     return this.http.get<any>(`${environment.URL}/orders`, {
       params: payload,
       headers: headers
     }).pipe(
-      tap(response => {
-        console.log('Respuesta de órdenes recibida:', response);
-        console.log('Tipo de response:', typeof response);
-        console.log('Tipo de response.data:', typeof response?.data);
-        console.log('Es array response.data:', Array.isArray(response?.data));
-      }),
       map((response: any) => {
         return response as OrderModel;
       })
@@ -43,17 +33,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando TODAS las órdenes del sistema');
-    console.log('URL:', `${environment.URL}/orders/all`);
-    console.log('Token incluido:', !!token);
-    
     return this.http.get<any>(`${environment.URL}/orders/all`, {
       headers: headers
     }).pipe(
-      tap(response => {
-        console.log('Todas las órdenes recibidas:', response);
-        console.log('Cantidad de órdenes:', response?.data?.length || response?.length);
-      }),
       map((response: any) => {
         // Manejar diferentes estructuras de respuesta
         if (response?.data && Array.isArray(response.data)) {
@@ -61,7 +43,6 @@ export class OrderService {
         } else if (Array.isArray(response)) {
           return response as Order[];
         } else {
-          console.warn('Estructura de respuesta inesperada:', response);
           return [];
         }
       })
@@ -81,23 +62,15 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando estados de órdenes');
-    console.log('URL:', `${environment.URL}/order-statuses`);
-    console.log('Token incluido:', !!token);
-    
     return this.http.get<any>(`${environment.URL}/order-statuses`, {
       headers: headers
     }).pipe(
-      tap(response => {
-        console.log('Estados de órdenes recibidos:', response);
-      }),
       map((response: any) => {
         if (response?.data && Array.isArray(response.data)) {
           return response.data as OrderStatus[];
         } else if (Array.isArray(response)) {
           return response as OrderStatus[];
         } else {
-          console.warn('Estructura de respuesta inesperada para estados:', response);
           return [];
         }
       })
@@ -109,15 +82,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando historial de estado para orden:', orderId);
-    console.log('URL:', `${environment.URL}/orders/${orderId}/status-history`);
-    
     return this.http.get<any>(`${environment.URL}/orders/${orderId}/status-history`, {
       headers: headers
     }).pipe(
-      tap(response => {
-        console.log('Historial de estado recibido:', response);
-      }),
       map((response: any) => {
         if (response?.data && Array.isArray(response.data)) {
           return response.data;
@@ -139,17 +106,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Actualizando estado de orden:', orderId);
-    console.log('Payload:', payload);
-    console.log('URL:', `${environment.URL}/orders/${orderId}/status`);
-    
     return this.http.put<any>(`${environment.URL}/orders/${orderId}/status`, payload, {
       headers: headers
-    }).pipe(
-      tap(response => {
-        console.log('Estado actualizado exitosamente:', response);
-      })
-    );
+    });
   }
 
   // POST /api/orders/{id}/status - Crear nuevo cambio de estado
@@ -161,17 +120,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Creando cambio de estado para orden:', orderId);
-    console.log('Payload:', payload);
-    console.log('URL:', `${environment.URL}/orders/${orderId}/status`);
-    
     return this.http.post<any>(`${environment.URL}/orders/${orderId}/status`, payload, {
       headers: headers
-    }).pipe(
-      tap(response => {
-        console.log('Cambio de estado creado exitosamente:', response);
-      })
-    );
+    });
   }
 
   // GET /api/orders/status-counts - Obtener conteos por estado
@@ -179,16 +130,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando conteos por estado de órdenes');
-    console.log('URL:', `${environment.URL}/orders/status-counts`);
-    
     return this.http.get<any>(`${environment.URL}/orders/status-counts`, {
       headers: headers
-    }).pipe(
-      tap(response => {
-        console.log('Conteos por estado recibidos:', response);
-      })
-    );
+    });
   }
 
   // GET /api/orders/by-status/{status} - Obtener órdenes por estado específico
@@ -196,17 +140,10 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando órdenes por estado:', status);
-    console.log('URL:', `${environment.URL}/orders/by-status/${status}`);
-    console.log('Payload:', payload);
-    
     return this.http.get<any>(`${environment.URL}/orders/by-status/${status}`, {
       params: payload,
       headers: headers
     }).pipe(
-      tap(response => {
-        console.log('Órdenes por estado recibidas:', response);
-      }),
       map((response: any) => {
         return response as OrderModel;
       })
@@ -218,17 +155,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Solicitando checkout con payload:', payload);
-    console.log('URL:', `${environment.URL}/orders/checkout`);
-    console.log('Token incluido:', !!token);
-    
     return this.http.post<any>(`${environment.URL}/orders/checkout`, payload, {
       headers: headers
-    }).pipe(
-      tap(response => {
-        console.log('Respuesta del checkout:', response);
-      })
-    );
+    });
   }
 
   // POST /api/orders - Crear nueva orden
@@ -236,17 +165,9 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    console.log('Creando orden con payload:', payload);
-    console.log('URL:', `${environment.URL}/orders`);
-    console.log('Token incluido:', !!token);
-    
     return this.http.post<any>(`${environment.URL}/orders`, payload, {
       headers: headers
-    }).pipe(
-      tap(response => {
-        console.log('Orden creada exitosamente:', response);
-      })
-    );
+    });
   }
 
   // Método privado para obtener el token del localStorage

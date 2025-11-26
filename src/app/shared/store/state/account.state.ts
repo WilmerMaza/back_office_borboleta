@@ -79,7 +79,6 @@ export class AccountState {
           }
         },
         error: err => { 
-          console.error('Error obteniendo detalles del usuario:', err);
           this.notificationService.notification = true;
         }
       })

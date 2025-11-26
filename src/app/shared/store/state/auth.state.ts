@@ -89,7 +89,6 @@ export class AuthState {
         }
       }),
       catchError((error) => {
-        console.error('Error en login:', error);
         this.notificationService.notification = true;
         return of(null);
       })

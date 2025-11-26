@@ -77,8 +77,6 @@ export class CategoryState {
     return this.categoryService.getCategories(action.payload).pipe(
       tap({
         next: result => {
-          console.log('📦 Respuesta del backend - Categorías:', result);
-          
           // Procesar la respuesta según la estructura del backend
           let categories: Category[] = [];
           let total = 0;
@@ -103,9 +101,6 @@ export class CategoryState {
             }
           }
           
-          console.log('✅ Categorías procesadas:', categories.length);
-          console.log('📊 Estructura de primera categoría:', categories[0]);
-          
           ctx.patchState({
             category: {
               data: categories,
@@ -114,7 +109,6 @@ export class CategoryState {
           });
         },
         error: err => { 
-          console.error('Error loading categories:', err);
         }
       })
     );
@@ -176,12 +170,8 @@ export class CategoryState {
   update(ctx: StateContext<CategoryStateModel>, action: UpdateCategory) {
     return this.categoryService.updateCategory(action.payload, action.id).pipe(
       tap((response: any) => {
-        console.log('📦 Respuesta de actualizar categoría:', response);
-        
         // Extraer la categoría actualizada de la respuesta del backend
         const updatedCategory = response?.data?.category || response?.data || response;
-        
-        console.log('✅ Categoría actualizada extraída:', updatedCategory);
         
         const state = ctx.getState();
         const updatedData = state.category.data.map(category => 
@@ -206,8 +196,6 @@ export class CategoryState {
   delete(ctx: StateContext<CategoryStateModel>, action: DeleteCategory) {
     return this.categoryService.deleteCategory(action.id).pipe(
       tap((response: any) => {
-        console.log('📦 Respuesta de eliminar categoría:', response);
-        
         const state = ctx.getState();
         const filteredData = state.category.data.filter(category => category.id !== action.id);
         
