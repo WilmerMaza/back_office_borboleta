@@ -17,6 +17,11 @@ export class ProductService {
       params: payload,
     });
   }
+
+  getProductById(id: number): Observable<any> {
+    return this.http.get<any>(`${environment.URL}/products/${id}`);
+  }
+
   createProduct(product: Product): Observable<Product> {
     return this.http.post<Product>(`${environment.URL}/products`, product);
   }

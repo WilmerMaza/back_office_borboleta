@@ -1,4 +1,4 @@
-import { Component, Inject, inject, Input, PLATFORM_ID, ViewChild } from '@angular/core';
+import { Component, Inject, inject, Input, OnChanges, PLATFORM_ID, ViewChild } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { CartAddOrUpdate } from '../../../interface/cart.interface';
@@ -18,7 +18,7 @@ import { isPlatformBrowser } from '@angular/common';
     templateUrl: './product-box.component.html',
     styleUrl: './product-box.component.scss'
 })
-export class ProductBoxComponent {
+export class ProductBoxComponent implements OnChanges {
 
   @Input() product: Product;
 
@@ -28,6 +28,7 @@ export class ProductBoxComponent {
 
   public cartItems: CartAddOrUpdate;
   public url: string;
+  public displayPrice: { price: number; isRange: boolean; prefix: string } = { price: 0, isRange: false, prefix: '' };
 
   constructor(private store: Store, @Inject(PLATFORM_ID) private platformId: object) {
     this.setting$.subscribe(setting => {
@@ -35,6 +36,44 @@ export class ProductBoxComponent {
         this.url = setting.general.site_url;
       }
     });
+  }
+
+  ngOnChanges() {
+    if (this.product) {
+      this.displayPrice = this.getDisplayPrice(this.product);
+    }
+  }
+
+  getDisplayPrice(product: Product): { price: number; isRange: boolean; prefix: string } {
+    if (product.type === 'classified' && product.variations?.length) {
+      // Calcular el precio más bajo con descuento aplicado
+      const prices = product.variations.map(v => {
+        const finalPrice = v.discount 
+          ? v.price - (v.price * v.discount / 100)
+          : v.price;
+        return finalPrice;
+      });
+      
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      
+      // Si todos tienen el mismo precio
+      if (minPrice === maxPrice) {
+        return { price: minPrice, isRange: false, prefix: '' };
+      }
+      
+      // Si tienen precios diferentes
+      return { price: minPrice, isRange: true, prefix: 'Desde' };
+    }
+    
+    // Para productos simples
+    return { 
+      price: product.discount 
+        ? product.price - (product.price * product.discount / 100)
+        : product.sale_price || product.price,
+      isRange: false,
+      prefix: ''
+    };
   }
 
   addToCart(product: Product, qty: number) {

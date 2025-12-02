@@ -18,7 +18,12 @@
          }
       </h6>
       <div class="counter-box">
-         <h6 class="sold theme-color">{{product?.sale_price | currencySymbol}}</h6>
+         <h6 class="sold theme-color">
+            @if(displayPrice.prefix){
+               <span class="text-muted me-1">{{ displayPrice.prefix }}</span>
+            }
+            {{ displayPrice.price | currencySymbol }}
+         </h6>
          <div class="addtocart_btn">
             @if(product?.product_type != 'external'){
                @if(product.stock_status == 'in_stock'){

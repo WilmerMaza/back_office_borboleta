@@ -4,7 +4,7 @@ import { Select, Store } from '@ngxs/store';
 import { SettingState } from '../../../shared/store/state/setting.state';
 import { Observable } from 'rxjs';
 import { Values } from '../../../shared/interface/setting.interface';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { Login } from '../../../shared/store/action/auth.action';
 import { TranslateModule } from '@ngx-translate/core';
 import { AlertComponent } from '../../../shared/components/ui/alert/alert.component';
@@ -27,7 +27,6 @@ export class LoginComponent {
 
   constructor(
     private store: Store,
-    private router: Router,
     private formBuilder: FormBuilder
   ) {
     this.form = this.formBuilder.group({
@@ -39,12 +38,8 @@ export class LoginComponent {
   submit() {
     this.form.markAllAsTouched();
     if(this.form.valid) {
-      this.store.dispatch(new Login(this.form.value)).subscribe({
-          complete: () => {
-            this.router.navigateByUrl('/dashboard');
-          }
-        }
-      );
+      // La navegación la maneja automáticamente auth.state.ts después del login exitoso
+      this.store.dispatch(new Login(this.form.value));
     }
   }
 
