@@ -8,6 +8,7 @@ import { User } from "../../interface/user.interface";
 import { UserService } from "../../services/user.service";
 import { OrderService } from "../../services/order.service";
 import { Store } from "@ngxs/store";
+import { GetStatisticsCount } from "../action/dashboard.action";
 
 export class OrderStateModel {
   order = {
@@ -161,6 +162,10 @@ export class OrderState {
             // Recargar la orden para obtener los datos actualizados
             this.store.dispatch(new ViewOrder(state.selectedOrder.order_number));
           }
+          // Recargar las estadísticas para actualizar los conteos
+          this.store.dispatch(new GetStatisticsCount());
+          // Recargar las órdenes para actualizar la lista
+          this.store.dispatch(new GetOrders());
         },
         error: err => { 
           throw new Error(err?.error?.message);

@@ -35,8 +35,30 @@ export class OrderStatusState {
 
    @Selector()
    static orderStatuses(state: OrderStatusStateModel) {
-      return state.orderStatus.data.map(res => { 
-         return { label: res?.name.replaceAll('_', ' '), value: res?.id }
+      return state.orderStatus.data
+        .filter(res => res && res.id) // Filtrar elementos válidos
+        .map(res => { 
+          // Usar el nombre del estado, o generar desde slug si name es inválido
+          let label: string;
+          if (res?.name && 
+              res.name.trim() !== '' && 
+              res.name.toLowerCase() !== 'desconocido' &&
+              res.name.toLowerCase() !== 'unknown') {
+            label = res.name.replaceAll('_', ' ');
+          } else if (res?.slug) {
+            // Generar nombre desde slug si name no es válido
+            label = res.slug.replace(/-/g, ' ').replace(/_/g, ' ');
+          } else {
+            label = 'Unknown';
+          }
+          
+          // Capitalizar cada palabra
+          label = label
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+          
+          return { label: label, value: res.id };
        });
    }
 

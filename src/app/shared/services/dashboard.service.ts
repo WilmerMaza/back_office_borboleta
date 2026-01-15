@@ -13,13 +13,25 @@ export class DashboardService {
   constructor(private http: HttpClient) {}
 
   getStatisticsCount(payload?: Params): Observable<StatisticsCount> {
-    return this.http.get<StatisticsCount>(`assets/data/count.json`, {
-      params: payload,
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    return this.http.get<StatisticsCount>(`${environment.URL}/statistics`, {
+      headers: headers,
+      params: payload
     });
   }
 
   getRevenueChart(): Observable<RevenueChart> {
     return this.http.get<RevenueChart>(`assets/data/chart.json`);
+  }
+
+  // Método privado para obtener el token del localStorage
+  private getToken(): string | null {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      return localStorage.getItem('access_token');
+    }
+    return null;
   }
 
 }
