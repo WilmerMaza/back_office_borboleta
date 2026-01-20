@@ -4,8 +4,8 @@
       <div class="mb-4">
         <div class="tracking-panel">
           <ul>
-            @for(orderStatus of (orderStatus$ | async)?.data; track orderStatus.id){
-              <li [class.active]="orderStatus?.sequence <= order?.order_status?.sequence" [ngClass]="{'d-none': ((orderStatus?.sequence >= order?.order_status?.sequence && order?.order_status?.slug == 'cancelled')
+            @for(orderStatus of (orderStatusWithActivities$ | async)?.data; track orderStatus.id){
+              <li [class.active]="order && order.order_status && orderStatus?.sequence <= order.order_status.sequence" [ngClass]="{'d-none': ((orderStatus?.sequence >= order?.order_status?.sequence && order?.order_status?.slug == 'cancelled')
                                   || orderStatus?.slug == 'cancelled') || (order?.is_digital_only && (orderStatus?.slug == 'shipped' || orderStatus?.slug == 'out-for-delivery'))}">
                 <div class="panel-content">
                   <div class="icon">
@@ -13,7 +13,7 @@
                   </div>
                   <div>
                     <div class="status">{{ orderStatus?.name.replaceAll('_', ' ') | titlecase }}</div>
-                    @if(orderStatus?.sequence <= order?.order_status?.sequence && orderStatus.activities_date){
+                    @if(order && order.order_status && orderStatus?.sequence <= order.order_status.sequence && orderStatus.activities_date){
                       <span class="panel-content-sm">{{ orderStatus.activities_date  }}</span>
                     }
                   </div>
@@ -180,11 +180,11 @@
           <ul>
             <li>
               <label>{{ 'name' | translate }}:</label>
-              <h4>{{ order?.consumer?.name }}</h4>
+              <h4>{{ order?.consumer?.name || order?.customer_name || '-' }}</h4>
             </li>
             <li>
               <label>{{ 'email_address' | translate }}:</label>
-              <h4>{{ order?.consumer?.email }}</h4>
+              <h4>{{ order?.consumer?.email || '-' }}</h4>
             </li>
             <li>
               <label>{{'billing_address' | translate }}:</label>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, catchError, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Params } from '../interface/core.interface';
 import { OrderModel, Order } from '../interface/order.interface';
@@ -13,17 +13,60 @@ export class OrderService {
 
   constructor(private http: HttpClient) {}
 
-  // GET /api/orders - Obtener todas las órdenes del sistema
+  // GET /api/orders/all - Obtener todas las órdenes del sistema
   getOrders(payload?: Params): Observable<OrderModel> {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    return this.http.get<any>(`${environment.URL}/orders`, {
+    const endpoint = `${environment.URL}/orders/all`;
+    console.log('🔵 [OrderService.getOrders] Endpoint usado:', endpoint);
+    console.log('🔵 [OrderService.getOrders] Este es el endpoint que muestra TODOS los pedidos');
+    console.log('🔵 [OrderService.getOrders] Parámetros:', payload);
+    
+    return this.http.get<any>(endpoint, {
       params: payload,
       headers: headers
     }).pipe(
       map((response: any) => {
-        return response as OrderModel;
+        console.log('🟢 [OrderService.getOrders] Respuesta recibida:', response);
+        console.log('🟢 [OrderService.getOrders] Total de pedidos:', response?.total);
+        console.log('🟢 [OrderService.getOrders] Cantidad de pedidos en data:', response?.data?.length);
+        console.log('🟢 [OrderService.getOrders] ¿Es array directo?', Array.isArray(response));
+        
+        // Determinar si la respuesta es un array directo o tiene estructura {data: []}
+        let ordersData: Order[] = [];
+        let totalCount = 0;
+        
+        if (Array.isArray(response)) {
+          ordersData = response;
+          totalCount = response.length;
+          console.log('🟢 [OrderService.getOrders] Cantidad de pedidos (array directo):', response.length);
+        } else if (response?.data && Array.isArray(response.data)) {
+          ordersData = response.data;
+          totalCount = response.total || response.data.length;
+          console.log('🟢 [OrderService.getOrders] Cantidad de pedidos en response.data:', response.data.length);
+        }
+        
+        // Verificar campos de un pedido de ejemplo
+        if (ordersData.length > 0) {
+          const firstOrder = ordersData[0];
+          console.log('🟡 [OrderService.getOrders] Primer pedido completo:', firstOrder);
+          console.log('🟡 [OrderService.getOrders] Campos del primer pedido:', Object.keys(firstOrder));
+          console.log('🟡 [OrderService.getOrders] Todos los campos y valores:', JSON.stringify(firstOrder, null, 2));
+          console.log('🟡 [OrderService.getOrders] payment_status:', firstOrder?.payment_status);
+          console.log('🟡 [OrderService.getOrders] payment_method:', firstOrder?.payment_method);
+          console.log('🟡 [OrderService.getOrders] order_status:', firstOrder?.order_status);
+          console.log('🟡 [OrderService.getOrders] status:', firstOrder?.status);
+        }
+        
+        // Construir respuesta en formato OrderModel
+        const result: OrderModel = {
+          data: ordersData,
+          total: totalCount,
+          ...response
+        };
+        
+        return result;
       })
     );
   }
@@ -33,16 +76,26 @@ export class OrderService {
     const token = this.getToken();
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
-    return this.http.get<any>(`${environment.URL}/orders/all`, {
+    const endpoint = `${environment.URL}/orders/all`;
+    console.log('🟣 [OrderService.getAllOrders] Endpoint usado:', endpoint);
+    console.log('🟣 [OrderService.getAllOrders] Este es el endpoint que muestra TODOS los pedidos');
+    
+    return this.http.get<any>(endpoint, {
       headers: headers
     }).pipe(
       map((response: any) => {
+        console.log('🟢 [OrderService.getAllOrders] Respuesta recibida:', response);
+        console.log('🟢 [OrderService.getAllOrders] Cantidad de pedidos:', Array.isArray(response) ? response.length : (response?.data?.length || 0));
+        
         // Manejar diferentes estructuras de respuesta
         if (response?.data && Array.isArray(response.data)) {
+          console.log('✅ [OrderService.getAllOrders] Pedidos encontrados en response.data:', response.data.length);
           return response.data as Order[];
         } else if (Array.isArray(response)) {
+          console.log('✅ [OrderService.getAllOrders] Respuesta es array directo:', response.length);
           return response as Order[];
         } else {
+          console.log('⚠️ [OrderService.getAllOrders] No se encontraron pedidos');
           return [];
         }
       })
@@ -50,9 +103,55 @@ export class OrderService {
   }
 
   getOrderByNumber(orderNumber: string): Observable<Order> {
-    return this.http.get<any>(`${environment.URL}/orders/number/${orderNumber}`).pipe(
+    const token = this.getToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    
+    // Logs detallados para depuración
+    console.log('🔵 [OrderService.getOrderByNumber] ========== INICIO ==========');
+    console.log('🔵 [OrderService.getOrderByNumber] Obteniendo orden número:', orderNumber);
+    console.log('🔵 [OrderService.getOrderByNumber] Token disponible:', !!token);
+    console.log('🔵 [OrderService.getOrderByNumber] Token (primeros 50 caracteres):', token ? token.substring(0, 50) + '...' : 'NO HAY TOKEN');
+    console.log('🔵 [OrderService.getOrderByNumber] URL completa:', `${environment.URL}/orders/number/${orderNumber}`);
+    console.log('🔵 [OrderService.getOrderByNumber] Headers enviados:', headers);
+    
+    // Verificar información del usuario del token (si es JWT)
+    if (token && typeof window !== 'undefined') {
+      try {
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          // Es un JWT, intentar decodificar el payload
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log('🔵 [OrderService.getOrderByNumber] Payload del token (decodificado):', payload);
+          console.log('🔵 [OrderService.getOrderByNumber] User ID en token:', payload.user_id || payload.id || payload.sub);
+          console.log('🔵 [OrderService.getOrderByNumber] Rol en token:', payload.role || payload.roles);
+          console.log('🔵 [OrderService.getOrderByNumber] Permisos en token:', payload.permissions);
+        }
+      } catch (error) {
+        console.log('⚠️ [OrderService.getOrderByNumber] No se pudo decodificar el token (puede no ser JWT)');
+      }
+    }
+    
+    return this.http.get<any>(`${environment.URL}/orders/number/${orderNumber}`, {
+      headers: headers
+    }).pipe(
       map((response: any) => {
+        console.log('🟢 [OrderService.getOrderByNumber] ✅ Respuesta exitosa:', response);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status_id:', response?.data?.order_status_id);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status:', response?.data?.order_status);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status.id:', response?.data?.order_status?.id);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status.slug:', response?.data?.order_status?.slug);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status.name:', response?.data?.order_status?.name);
+        console.log('🟡 [OrderService.getOrderByNumber] order_status.sequence:', response?.data?.order_status?.sequence);
+        console.log('🟢 [OrderService.getOrderByNumber] ========== FIN ==========');
         return response.data as Order;
+      }),
+      catchError((error: any) => {
+        console.error('🔴 [OrderService.getOrderByNumber] ❌ ERROR:', error);
+        console.error('🔴 [OrderService.getOrderByNumber] Status:', error?.status);
+        console.error('🔴 [OrderService.getOrderByNumber] Mensaje:', error?.error?.message || error?.message);
+        console.error('🔴 [OrderService.getOrderByNumber] Error completo:', error);
+        console.log('🔴 [OrderService.getOrderByNumber] ========== FIN ==========');
+        return throwError(() => error);
       })
     );
   }
