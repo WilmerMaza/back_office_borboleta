@@ -34,6 +34,7 @@ export class OrderComponent {
       { title: "order_number", dataField: "order_id" },
       { title: "order_date", dataField: "created_at", type: "date", sortable: true, sort_direction: 'desc' },
       { title: "customer_name", dataField: "consumer_name" },
+      { title: "status", dataField: "order_status_display" },
       { title: "total_amount", dataField: "total", type: 'price' },
       { title: "payment_status", dataField: "order_payment_status" },
       { title: "payment_method", dataField: "payment_mode" }
@@ -72,7 +73,7 @@ export class OrderComponent {
       color: 'shipped',
     },
     {
-      value: 'out_for_delivery',
+      value: 'out-for-delivery',
       label: 'Out for delivery',
       countKey: 'total_out_of_delivery_orders',
       color: 'out-delivery',
@@ -95,18 +96,128 @@ export class OrderComponent {
   ngOnInit() {
     // Cargar estados de órdenes
     this.store.dispatch(new GetOrderStatus());
+    // Cargar estadísticas para los conteos de estados
+    this.store.dispatch(new GetStatisticsCount());
+    
+    // Mapeo de IDs a slugs correctos (para cuando el backend envía datos incorrectos)
+    const statusIdToSlugMap: { [key: number]: { slug: string, name: string } } = {
+      1: { slug: 'pending', name: 'pending' },
+      2: { slug: 'processing', name: 'processing' },
+      3: { slug: 'cancelled', name: 'cancelled' },
+      4: { slug: 'shipped', name: 'shipped' },
+      5: { slug: 'out-for-delivery', name: 'out_for_delivery' },
+      6: { slug: 'delivered', name: 'delivered' }
+    };
     
     this.order$.subscribe(order => {
-      let orders = order?.data?.filter((element: Order) => {
-        element.order_id = `<span class="fw-bolder">#${element?.order_number}</span>`;
-        element.order_payment_status = element?.payment_status ? `<div class="status-${element.payment_status.toLowerCase()}"><span>${element.payment_status.replace(/_/g, " ")}</span></div>` : '-';
-        element.payment_mode = element?.payment_method ? `<div class="payment-mode"><span>${element.payment_method.replace(/_/g, " ").toUpperCase()}</span></div>` : '-';
-        element.consumer_name = `<span class="text-capitalize">${element?.consumer?.name}</span>`;
-        return element;
-      });
-      
-      this.tableConfig.data = order ? orders : [];
-      this.tableConfig.total = order ? order?.total : 0;
+      if (order?.data && order.data.length > 0) {
+        // DEBUG: Ver qué campos tiene el primer pedido
+        console.log('🟡 [OrderComponent] Primer pedido antes de procesar:', order.data[0]);
+        console.log('🟡 [OrderComponent] payment_status:', order.data[0]?.payment_status);
+        console.log('🟡 [OrderComponent] payment_method:', order.data[0]?.payment_method);
+        console.log('🟡 [OrderComponent] order_status:', order.data[0]?.order_status);
+        
+        let orders = order.data.map((element: Order) => {
+          element.order_id = `<span class="fw-bolder">#${element?.order_number}</span>`;
+          
+          // Estado de la orden - mostrar todos los estados que vengan del backend
+          const orderStatus = element?.order_status;
+          // También verificar si hay un campo 'status' directo (puede venir como string)
+          const statusString = (element as any)?.status;
+          let statusSlug: string | undefined;
+          let statusName: string | undefined;
+          
+          // DEBUG: Ver qué está llegando del backend para esta orden específica
+          console.log('🟡 [OrderComponent] Procesando orden:', element?.order_number, 'orderStatus:', orderStatus);
+          
+          // Prioridad 1: Usar el slug del backend si existe y es válido
+          if (orderStatus?.slug && orderStatus.slug.trim() !== '') {
+            statusSlug = orderStatus.slug;
+            console.log('🟢 [OrderComponent] Usando slug del backend:', statusSlug, 'para orden:', element?.order_number);
+          }
+          
+          // Prioridad 2: Si no hay order_status pero hay status como string, usarlo
+          if (!statusSlug && statusString && typeof statusString === 'string') {
+            statusSlug = statusString;
+            console.log('🟢 [OrderComponent] Usando status string:', statusSlug, 'para orden:', element?.order_number);
+          }
+          
+          // Prioridad 3: Si tenemos ID pero no slug, usar el mapeo
+          if (!statusSlug && orderStatus?.id && statusIdToSlugMap[orderStatus.id]) {
+            const mappedStatus = statusIdToSlugMap[orderStatus.id];
+            statusSlug = mappedStatus.slug;
+            statusName = mappedStatus.name;
+            console.log('🟢 [OrderComponent] Usando mapeo por ID:', orderStatus.id, '-> slug:', statusSlug, 'para orden:', element?.order_number);
+          }
+          
+          if (statusSlug) {
+            // Determinar el nombre a usar
+            let nameToFormat: string;
+            if (orderStatus?.name && 
+                orderStatus.name.trim() !== '' && 
+                orderStatus.name.toLowerCase() !== 'desconocido' &&
+                orderStatus.name.toLowerCase() !== 'unknown') {
+              nameToFormat = orderStatus.name;
+            } else if (statusName) {
+              // Usar el nombre del mapeo si está disponible
+              nameToFormat = statusName;
+            } else {
+              // Generar nombre desde slug: convertir guiones a espacios
+              nameToFormat = statusSlug.replace(/-/g, ' ');
+            }
+            
+            // Formatear el nombre: reemplazar guiones bajos por espacios y capitalizar cada palabra
+            const formattedName = nameToFormat
+              .replace(/_/g, " ")
+              .split(" ")
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+              .join(" ");
+              
+            console.log('🟢 [OrderComponent] Estado final para orden', element?.order_number, ':', {slug: statusSlug, name: formattedName});
+            (element as any).order_status_display = `<div class="status-${statusSlug}"><span>${formattedName}</span></div>`;
+          } else {
+            console.log('⚠️ [OrderComponent] No se pudo determinar el estado para orden:', element?.order_number, 'orderStatus:', orderStatus, 'statusString:', statusString);
+            (element as any).order_status_display = '<div class="status-pending"><span>-</span></div>';
+          }
+          
+          // Estado de pago - buscar en diferentes ubicaciones posibles
+          // El backend puede tener payment_status directamente o en otro lugar
+          const paymentStatus = (element as any)?.payment_status 
+            || (element as any)?.payment?.status 
+            || (element as any)?.transaction?.payment_status
+            || '';
+          element.order_payment_status = paymentStatus 
+            ? `<div class="status-${paymentStatus.toLowerCase()}"><span>${paymentStatus.replace(/_/g, " ")}</span></div>` 
+            : '<div class="status-pending"><span>Pendiente</span></div>'; // Valor por defecto si no existe
+          
+          // Método de pago - buscar en diferentes ubicaciones posibles
+          const paymentMethod = (element as any)?.payment_method 
+            || (element as any)?.payment?.method 
+            || (element as any)?.transaction?.payment_method
+            || '';
+          element.payment_mode = paymentMethod 
+            ? `<div class="payment-mode"><span>${paymentMethod.replace(/_/g, " ").toUpperCase()}</span></div>` 
+            : '<div class="payment-mode"><span>N/A</span></div>'; // Valor por defecto si no existe
+          
+          // Nombre del consumidor
+          element.consumer_name = `<span class="text-capitalize">${element?.consumer?.name || ''}</span>`;
+          
+          return element;
+        });
+        
+        // DEBUG: Ver el primer pedido después de procesar
+        if (orders.length > 0) {
+          console.log('🟢 [OrderComponent] Primer pedido después de procesar:', orders[0]);
+          console.log('🟢 [OrderComponent] order_payment_status:', orders[0].order_payment_status);
+          console.log('🟢 [OrderComponent] payment_mode:', orders[0].payment_mode);
+        }
+        
+        this.tableConfig.data = orders;
+        this.tableConfig.total = order?.total || orders.length;
+      } else {
+        this.tableConfig.data = [];
+        this.tableConfig.total = 0;
+      }
     });
 
     this.statistics$.subscribe((statistics:any) => {
@@ -119,9 +230,19 @@ export class OrderComponent {
     });
 
     this.activatedRoute.queryParams.subscribe(params => {
-      this.filter = {...this.filter, status : params['status'] ? params['status'] : ''};
-      this.selectedStatus = params['status'];
+      const statusParam = params['status'] ? params['status'] : '';
+      this.selectedStatus = statusParam;
+      // Limpiar el filtro y reconstruirlo con el status correcto
+      this.filter = {
+        status: statusParam,
+        start_date: params['start_date'] || '',
+        end_date: params['end_date'] || '',
+        page: params['page'] || 1,
+        paginate: params['paginate'] || 15
+      };
+      console.log('🟡 [OrderComponent] Filtro aplicado desde queryParams:', this.filter);
       this.store.dispatch(new GetOrders(this.filter));
+      this.store.dispatch(new GetStatisticsCount(this.filter));
     })
   }
 
@@ -130,8 +251,16 @@ export class OrderComponent {
     const endDate = data && data['end_date'] ? data['end_date'] : '';
     const status = this.selectedStatus ? this.selectedStatus : '';
 
-    this.filter = { ...this.filter, ...data, start_date: startDate, end_date: endDate };
-    this.filter['status'] = status;
+    // Actualizar el filtro manteniendo el status seleccionado
+    this.filter = { 
+      ...this.filter, 
+      ...data, 
+      start_date: startDate, 
+      end_date: endDate,
+      status: status
+    };
+
+    console.log('🟡 [OrderComponent] onTableChange - Filtro actualizado:', this.filter);
 
     this.store.dispatch(new GetOrders(this.filter));
     this.store.dispatch(new GetStatisticsCount({ start_date: startDate, end_date: endDate, status: status }));
@@ -148,9 +277,11 @@ export class OrderComponent {
 
   filterOrder(status: string) {
     this.renderer.addClass(this.document.body, 'loader-none');
+    console.log('🟡 [OrderComponent] filterOrder - Cambiando estado a:', status);
     this.router.navigate([], {
       queryParams: {
         'status': status ? status : null,
+        'page': 1 // Resetear a la primera página cuando se cambia el filtro
       },
       queryParamsHandling: 'merge'
     });

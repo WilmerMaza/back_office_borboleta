@@ -59,9 +59,24 @@ export class ShippingNoteModalComponent {
   }
 	model: NgbDateStruct;
   submit(modal: NgbModalRef, value: string) {
-    const currentDate = new Date();
-    this.datePipe.transform(this.date.value ? this.date.value : currentDate, 'yyyy-MM-ddTHH:mm:ss.SSSSSSZ');
-    this.store.dispatch(new UpdateOrderStatus(this?.orderId, { order_status_id: Number(this.statusId), note: value, changed_at: this.datePipe.transform(currentDate, 'yyyy-MM-ddTHH:mm:ss.SSSSSSZ')!})).subscribe({
+    let dateToUse: Date;
+    
+    // Si el usuario seleccionó una fecha, usarla; si no, usar la fecha actual
+    if (this.date.value) {
+      dateToUse = new Date(this.date.value);
+    } else {
+      dateToUse = new Date();
+    }
+    
+    // Convertir a formato compatible con Laravel/PHP (yyyy-MM-ddTHH:mm:ss)
+    // Algunos backends no aceptan la Z final o los milisegundos
+    const changedAt = this.datePipe.transform(dateToUse, 'yyyy-MM-ddTHH:mm:ss') || dateToUse.toISOString().slice(0, 19);
+    
+    this.store.dispatch(new UpdateOrderStatus(this?.orderId, { 
+      order_status_id: Number(this.statusId), 
+      note: value, 
+      changed_at: changedAt
+    })).subscribe({
       complete: () => {
         modal.dismiss();
       }

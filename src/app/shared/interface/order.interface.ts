@@ -21,6 +21,7 @@ export interface Order {
     consumer: User;
     order_status_activities: OrderStatusActivities[];
     consumer_name: string;
+    customer_name?: string;
     products: Product[];
     coupon_id: number;
     coupon: Coupon;
