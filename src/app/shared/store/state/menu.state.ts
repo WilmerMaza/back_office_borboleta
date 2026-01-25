@@ -47,9 +47,13 @@ export class MenuState {
 
   @Action(GetMenu)
   getMenu(ctx: StateContext<MenuStateModel>, action: GetMenu) {
+    console.log('🔍 [MENU] GetMenu - Payload:', action.payload);
     return this.menuService.getMenu(action.payload).pipe(
       tap({
         next: result => { 
+          console.log('✅ [MENU] GetMenu - Response completa:', result);
+          console.log('📊 [MENU] GetMenu - result.data:', result.data);
+          console.log('📊 [MENU] GetMenu - result.total:', result?.total);
           ctx.patchState({
             menu: {
               data: result.data,
@@ -58,6 +62,9 @@ export class MenuState {
           });
         },
         error: err => { 
+          console.error('❌ [MENU] GetMenu - Error:', err);
+          console.error('❌ [MENU] GetMenu - Error details:', err?.error);
+          this.notificationService.showError(err?.error?.message || 'Error al obtener los menús');
           throw new Error(err?.error?.message);
         }
       })
@@ -66,22 +73,45 @@ export class MenuState {
 
   @Action(CreateMenu)
   create(ctx: StateContext<MenuStateModel>, action: CreateMenu) {
-    // Create Menu Logic Here
+    return this.menuService.createMenu(action.payload).pipe(
+      tap({
+        next: (response: any) => {
+          const newMenu = response?.data || response;
+          const state = ctx.getState();
+          ctx.setState({
+            ...state,
+            menu: {
+              data: [...state.menu.data, newMenu],
+              total: state.menu.total + 1
+            }
+          });
+          this.notificationService.showSuccess(response?.message || 'Menú creado exitosamente');
+          this.store.dispatch(new GetMenu());
+        },
+        error: err => {
+          console.error('❌ [MENU] CreateMenu - Error:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al crear el menú');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
    
   @Action(EditMenu)
   edit(ctx: StateContext<MenuStateModel>, { id }: EditMenu) {
-    return this.menuService.getMenu().pipe(
+    return this.menuService.getMenuById(id).pipe(
       tap({
-        next: results => { 
+        next: (result: any) => { 
           const state = ctx.getState();
-          const result = results.data.find(menu => menu.id == id);
+          const menu = (result as any)?.data || result;
           ctx.patchState({
             ...state,
-            selectedMenu: result
+            selectedMenu: menu
           });
         },
         error: err => { 
+          console.error('❌ [MENU] EditMenu - Error:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al obtener el menú');
           throw new Error(err?.error?.message);
         }
       })
@@ -90,17 +120,81 @@ export class MenuState {
 
   @Action(UpdateMenu)
   update(ctx: StateContext<MenuStateModel>, { payload, id }: UpdateMenu) {
-    // Update Menu Logic Here
+    return this.menuService.updateMenu(payload, id).pipe(
+      tap({
+        next: (response: any) => {
+          const updatedMenu = response?.data || response;
+          const state = ctx.getState();
+          const updatedData = state.menu.data.map(menu => 
+            menu.id === id ? updatedMenu : menu
+          );
+          
+          ctx.setState({
+            ...state,
+            menu: {
+              data: updatedData,
+              total: state.menu.total
+            },
+            selectedMenu: updatedMenu
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Menú actualizado exitosamente');
+          this.store.dispatch(new GetMenu());
+        },
+        error: err => {
+          console.error('❌ [MENU] UpdateMenu - Error:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el menú');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(UpdateSortMenu)
   updateShort(ctx: StateContext<MenuStateModel>, action: UpdateSortMenu) {
-    // Update Short Logic Here
+    // El payload ya viene con { menus: [...] } desde el componente
+    return this.menuService.updateMenuSort(action.payload).pipe(
+      tap({
+        next: (response: any) => {
+          this.notificationService.showSuccess(response?.message || 'Orden de menús actualizado exitosamente');
+          this.store.dispatch(new GetMenu());
+        },
+        error: err => {
+          console.error('❌ [MENU] UpdateSortMenu - Error:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el orden de los menús');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteMenu)
   delete(ctx: StateContext<MenuStateModel>, { id }: DeleteMenu) {
-    // Delete Menu Logic Here
+    return this.menuService.deleteMenu(id).pipe(
+      tap({
+        next: (response: any) => {
+          const state = ctx.getState();
+          const filteredData = state.menu.data.filter(menu => menu.id !== id);
+          
+          ctx.setState({
+            ...state,
+            menu: {
+              data: filteredData,
+              total: state.menu.total - 1
+            },
+            selectedMenu: null
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Menú eliminado exitosamente');
+          this.store.dispatch(new GetMenu());
+        },
+        error: err => {
+          console.error('❌ [MENU] DeleteMenu - Error:', err);
+          this.notificationService.showError(err?.error?.message || 'Error al eliminar el menú');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
 }

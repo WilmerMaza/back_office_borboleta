@@ -221,51 +221,51 @@ export const menu: Sidebar[] = [
       level: 1,
       permission: ["attachment.index"]
     },
-    {
-      id: 7,
-      title: "blog",
-      active: false,
-      icon: "ri-article-line",
-      type: "sub",
-      level: 1,
-      acl_permission: ["blog.index"],
-      children: [
-        {
-          parent_id: 7,
-          title: "all blogs",
-          path: "/blog",
-          type: "link",
-          level: 2,
-          permission: ["blog.index"]
-        },
-        {
-          parent_id: 7,
-          title: "categories",
-          path: "/blog/category",
-          type: "link",
-          level: 2,
-          permission: ["category.index"]
-        },
-        {
-          parent_id: 7,
-          title: "tags",
-          path: "/blog/tag",
-          type: "link",
-          level: 2,
-          permission: ["tag.index"]
-        }
-      ],
-    },
-    {
-      id: 8,
-      title: "pages",
-      path: "/page",
-      active: false,
-      icon: "ri-pages-line",
-      type: "sub",
-      level: 1,
-      permission: ["page.index"]
-    },
+    // {
+    //   id: 7,
+    //   title: "blog",
+    //   active: false,
+    //   icon: "ri-article-line",
+    //   type: "sub",
+    //   level: 1,
+    //   acl_permission: ["blog.index"],
+    //   children: [
+    //     {
+    //       parent_id: 7,
+    //       title: "all blogs",
+    //       path: "/blog",
+    //       type: "link",
+    //       level: 2,
+    //       permission: ["blog.index"]
+    //     },
+    //     {
+    //       parent_id: 7,
+    //       title: "categories",
+    //       path: "/blog/category",
+    //       type: "link",
+    //       level: 2,
+    //       permission: ["category.index"]
+    //     },
+    //     {
+    //       parent_id: 7,
+    //       title: "tags",
+    //       path: "/blog/tag",
+    //       type: "link",
+    //       level: 2,
+    //       permission: ["tag.index"]
+    //     }
+    //   ],
+    // },
+    // {
+    //   id: 8,
+    //   title: "pages",
+    //   path: "/page",
+    //   active: false,
+    //   icon: "ri-pages-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["page.index"]
+    // },
     {
       id: 9,
       title: "taxes",
@@ -306,16 +306,16 @@ export const menu: Sidebar[] = [
       level: 1,
       permission: ["currency.index"]
     },
-    {
-      id: 13,
-      title: "points",
-      path: "/point",
-      active: false,
-      icon: "ri-coins-line",
-      type: "sub",
-      level: 1,
-      permission: ["point.index"]
-    },
+    // {
+    //   id: 13,
+    //   title: "points",
+    //   path: "/point",
+    //   active: false,
+    //   icon: "ri-coins-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["point.index"]
+    // },
     {
       id: 14,
       title: "wallet",
@@ -338,46 +338,46 @@ export const menu: Sidebar[] = [
       level: 1,
       permission: ["refund.index"]
     },
-    {
-      id: 16,
-      title: "reviews",
-      path: "/review",
-      active: false,
-      icon: "ri-star-line",
-      type: "sub",
-      level: 1,
-      permission: ["review.index"]
-    },
-    {
-      id: 17,
-      title: "faqs",
-      path: "/faq",
-      active: false,
-      icon: "ri-questionnaire-line",
-      type: "sub",
-      level: 1,
-      permission: ["faq.index"]
-    },
-    {
-      id: 18,
-      title: "notice",
-      path: "/notice",
-      active: false,
-      icon: "ri-article-line",
-      type: "sub",
-      level: 1,
-      permission: ["notice.index"]
-    },
-    {
-      id: 19,
-      title: "Subscription",
-      path: "/subscription",
-      active: false,
-      icon: "ri-settings-3-line",
-      type: "sub",
-      level: 1,
-      permission: ["subscribe.index"]
-    },
+    // {
+    //   id: 16,
+    //   title: "reviews",
+    //   path: "/review",
+    //   active: false,
+    //   icon: "ri-star-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["review.index"]
+    // },
+    // {
+    //   id: 17,
+    //   title: "faqs",
+    //   path: "/faq",
+    //   active: false,
+    //   icon: "ri-questionnaire-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["faq.index"]
+    // },
+    // {
+    //   id: 18,
+    //   title: "notice",
+    //   path: "/notice",
+    //   active: false,
+    //   icon: "ri-article-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["notice.index"]
+    // },
+    // {
+    //   id: 19,
+    //   title: "Subscription",
+    //   path: "/subscription",
+    //   active: false,
+    //   icon: "ri-settings-3-line",
+    //   type: "sub",
+    //   level: 1,
+    //   permission: ["subscribe.index"]
+    // },
     {
       id: 20,
       title: "store front",
@@ -413,16 +413,16 @@ export const menu: Sidebar[] = [
         }
       ]
     },
-    {
-      id: 21,
-      title: "settings",
-      path: "/setting",
-      active: false,
-      icon: "ri-settings-3-line",
-      type: "sub",
-      level: 1,
-      permission: ["setting.index"]
-    },
+    //{
+    //  id: 21,
+    //  title: "settings",
+    //  path: "/setting",
+    //  active: false,
+    //  icon: "ri-settings-3-line",
+    //  type: "sub",
+    //  level: 1,
+    //  permission: ["setting.index"]
+    // },
     // {
     //   id: 22,
     //   title: "app settings",

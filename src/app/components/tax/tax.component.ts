@@ -41,6 +41,7 @@ export class TaxComponent {
     public router: Router) { }
 
   ngOnInit() {
+    this.store.dispatch(new GetTaxes());
     this.tax$.subscribe(tax => {
       this.tableConfig.data = tax ? tax?.data : [];
       this.tableConfig.total = tax ? tax?.total : 0;

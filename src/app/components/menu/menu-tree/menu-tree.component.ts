@@ -107,9 +107,9 @@ export class MenuTreeComponent {
 
   updateShortNumbers(items: any[]) {
     items.forEach((item, index) => {
-      item.short = index + 1;
-      if (item.subtasks) {
-        this.updateShortNumbers(item.subtasks);
+      item.sort = index;
+      if (item.child && item.child.length > 0) {
+        this.updateShortNumbers(item.child);
       }
     });
   }
