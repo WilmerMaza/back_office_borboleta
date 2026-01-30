@@ -47,25 +47,30 @@ export class MenuState {
 
   @Action(GetMenu)
   getMenu(ctx: StateContext<MenuStateModel>, action: GetMenu) {
-    console.log('🔍 [MENU] GetMenu - Payload:', action.payload);
     return this.menuService.getMenu(action.payload).pipe(
       tap({
         next: result => { 
-          console.log('✅ [MENU] GetMenu - Response completa:', result);
-          console.log('📊 [MENU] GetMenu - result.data:', result.data);
-          console.log('📊 [MENU] GetMenu - result.total:', result?.total);
           ctx.patchState({
             menu: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data?.length
+              data: result.data || [],
+              total: result?.total ? result?.total : (result.data?.length || 0)
             }
           });
         },
         error: err => { 
-          console.error('❌ [MENU] GetMenu - Error:', err);
-          console.error('❌ [MENU] GetMenu - Error details:', err?.error);
-          this.notificationService.showError(err?.error?.message || 'Error al obtener los menús');
-          throw new Error(err?.error?.message);
+          // Si es un error 401, el interceptor ya maneja la redirección
+          // NO mostrar notificación para errores 401 - silenciar completamente
+          if (err?.status === 401) {
+            // Mantener el estado actual sin cambios y no mostrar ningún mensaje
+            return;
+          }
+          
+          // Para otros errores, mostrar notificación pero no lanzar error que rompa el flujo
+          // Verificar que el mensaje no sea "Token de acceso requerido" por si acaso
+          const errorMessage = err?.error?.message || 'Error al obtener los menús';
+          if (errorMessage !== 'Token de acceso requerido' && err?.status !== 401) {
+            this.notificationService.showError(errorMessage);
+          }
         }
       })
     );
@@ -89,7 +94,6 @@ export class MenuState {
           this.store.dispatch(new GetMenu());
         },
         error: err => {
-          console.error('❌ [MENU] CreateMenu - Error:', err);
           this.notificationService.showError(err?.error?.message || 'Error al crear el menú');
           throw new Error(err?.error?.message);
         }
@@ -110,7 +114,6 @@ export class MenuState {
           });
         },
         error: err => { 
-          console.error('❌ [MENU] EditMenu - Error:', err);
           this.notificationService.showError(err?.error?.message || 'Error al obtener el menú');
           throw new Error(err?.error?.message);
         }
@@ -142,7 +145,6 @@ export class MenuState {
           this.store.dispatch(new GetMenu());
         },
         error: err => {
-          console.error('❌ [MENU] UpdateMenu - Error:', err);
           this.notificationService.showError(err?.error?.message || 'Error al actualizar el menú');
           throw new Error(err?.error?.message);
         }
@@ -160,7 +162,6 @@ export class MenuState {
           this.store.dispatch(new GetMenu());
         },
         error: err => {
-          console.error('❌ [MENU] UpdateSortMenu - Error:', err);
           this.notificationService.showError(err?.error?.message || 'Error al actualizar el orden de los menús');
           throw new Error(err?.error?.message);
         }
@@ -189,7 +190,6 @@ export class MenuState {
           this.store.dispatch(new GetMenu());
         },
         error: err => {
-          console.error('❌ [MENU] DeleteMenu - Error:', err);
           this.notificationService.showError(err?.error?.message || 'Error al eliminar el menú');
           throw new Error(err?.error?.message);
         }
