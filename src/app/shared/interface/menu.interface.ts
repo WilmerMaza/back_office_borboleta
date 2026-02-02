@@ -10,7 +10,8 @@ export interface Menu {
   title: string;
   link_type: string;
   path: string;
-  parent_id: number; 
+  parent_id: number | null; 
+  sort?: number;
   show?: boolean;
   mega_menu: number | boolean;
   mega_menu_type: string;
@@ -21,11 +22,13 @@ export interface Menu {
   product_ids: number[]; 
   blog_ids: number[]; 
   child: Menu[];
-  banner_image_id: string;
-  banner_image: Attachment;
-  item_image_id: string;
-  item_image: Attachment;
+  banner_image_id: string | number | null;
+  banner_image: Attachment | null;
+  item_image_id: string | number | null;
+  item_image: Attachment | null;
   status: number | boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface MobileMenu {

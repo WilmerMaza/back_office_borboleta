@@ -52,9 +52,15 @@ export class TaxState {
 
   @Action(GetTaxes)
   getTaxes(ctx: StateContext<TaxStateModel>, action: GetTaxes) {
+    console.log('🔍 [TAX] GetTaxes - Payload:', action.payload);
     return this.taxService.getTaxes(action.payload).pipe(
       tap({
         next: result => { 
+          console.log('✅ [TAX] GetTaxes - Response completa:', result);
+          console.log('📊 [TAX] GetTaxes - result.data:', result.data);
+          console.log('📊 [TAX] GetTaxes - result.total:', result?.total);
+          console.log('📊 [TAX] GetTaxes - result.current_page:', (result as any)?.current_page);
+          console.log('📊 [TAX] GetTaxes - result.per_page:', (result as any)?.per_page);
           ctx.patchState({
             tax: {
               data: result.data,
@@ -63,6 +69,8 @@ export class TaxState {
           });
         },
         error: err => { 
+          console.error('❌ [TAX] GetTaxes - Error:', err);
+          console.error('❌ [TAX] GetTaxes - Error details:', err?.error);
           throw new Error(err?.error?.message);
         }
       })
@@ -71,22 +79,57 @@ export class TaxState {
 
   @Action(CreateTax)
   create(ctx: StateContext<TaxStateModel>, action: CreateTax) {
-    // Create Tax Logic Here
+    console.log('🔍 [TAX] CreateTax - Payload:', action.payload);
+    return this.taxService.createTax(action.payload).pipe(
+      tap({
+        next: (response: any) => {
+          console.log('✅ [TAX] CreateTax - Response completa:', response);
+          console.log('📊 [TAX] CreateTax - response.data:', response?.data);
+          console.log('📊 [TAX] CreateTax - response.message:', response?.message);
+          const newTax = response?.data || response;
+          console.log('📊 [TAX] CreateTax - NewTax final:', newTax);
+          const state = ctx.getState();
+          ctx.setState({
+            ...state,
+            tax: {
+              data: [...state.tax.data, newTax],
+              total: state.tax.total + 1
+            }
+          });
+          this.notificationService.showSuccess(response?.message || 'Impuesto creado exitosamente');
+          this.store.dispatch(new GetTaxes());
+        },
+        error: err => {
+          console.error('❌ [TAX] CreateTax - Error:', err);
+          console.error('❌ [TAX] CreateTax - Error details:', err?.error);
+          this.notificationService.showError(err?.error?.message || 'Error al crear el impuesto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(EditTax)
   edit(ctx: StateContext<TaxStateModel>, { id }: EditTax) {
-    return this.taxService.getTaxes().pipe(
+    console.log('🔍 [TAX] EditTax - ID:', id);
+    return this.taxService.getTaxById(id).pipe(
       tap({
-        next: results => { 
+        next: (result: any) => { 
+          console.log('✅ [TAX] EditTax - Response completa:', result);
+          console.log('📊 [TAX] EditTax - result.data:', (result as any)?.data);
+          console.log('📊 [TAX] EditTax - result (directo):', result);
           const state = ctx.getState();
-          const result = results.data.find(tax => tax.id == id);
+          const tax = (result as any)?.data || result;
+          console.log('📊 [TAX] EditTax - Tax final a usar:', tax);
           ctx.patchState({
             ...state,
-            selectedTax: result
+            selectedTax: tax
           });
         },
         error: err => { 
+          console.error('❌ [TAX] EditTax - Error:', err);
+          console.error('❌ [TAX] EditTax - Error details:', err?.error);
+          this.notificationService.showError(err?.error?.message || 'Error al obtener el impuesto');
           throw new Error(err?.error?.message);
         }
       })
@@ -95,22 +138,124 @@ export class TaxState {
 
   @Action(UpdateTax)
   update(ctx: StateContext<TaxStateModel>, { payload, id }: UpdateTax) {
-    // Update Tax Logic Here
+    console.log('🔍 [TAX] UpdateTax - ID:', id, 'Payload:', payload);
+    return this.taxService.updateTax(payload, id).pipe(
+      tap({
+        next: (response: any) => {
+          console.log('✅ [TAX] UpdateTax - Response completa:', response);
+          console.log('📊 [TAX] UpdateTax - response.data:', response?.data);
+          const updatedTax = response?.data || response;
+          console.log('📊 [TAX] UpdateTax - UpdatedTax final:', updatedTax);
+          const state = ctx.getState();
+          const updatedData = state.tax.data.map(tax => 
+            tax.id === id ? updatedTax : tax
+          );
+          
+          ctx.setState({
+            ...state,
+            tax: {
+              data: updatedData,
+              total: state.tax.total
+            },
+            selectedTax: updatedTax
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Impuesto actualizado exitosamente');
+          this.store.dispatch(new GetTaxes());
+        },
+        error: err => {
+          console.error('❌ [TAX] UpdateTax - Error:', err);
+          console.error('❌ [TAX] UpdateTax - Error details:', err?.error);
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el impuesto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(UpdateTaxStatus)
   updateStatus(ctx: StateContext<TaxStateModel>, { id, status }: UpdateTaxStatus) {
-    // Update Tax Status Logic Here
+    return this.taxService.updateTaxStatus(id, status).pipe(
+      tap({
+        next: (response: any) => {
+          const updatedTax = response?.data || response;
+          const state = ctx.getState();
+          const updatedData = state.tax.data.map(tax => 
+            tax.id === id ? { ...tax, status: updatedTax.status || status } : tax
+          );
+          
+          ctx.setState({
+            ...state,
+            tax: {
+              data: updatedData,
+              total: state.tax.total
+            }
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Estado del impuesto actualizado exitosamente');
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar el estado del impuesto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteTax)
   delete(ctx: StateContext<TaxStateModel>, { id }: DeleteTax) {
-    // Delete Tax Logic Here
+    return this.taxService.deleteTax(id).pipe(
+      tap({
+        next: (response: any) => {
+          const state = ctx.getState();
+          const filteredData = state.tax.data.filter(tax => tax.id !== id);
+          
+          ctx.setState({
+            ...state,
+            tax: {
+              data: filteredData,
+              total: state.tax.total - 1
+            },
+            selectedTax: null
+          });
+          
+          this.notificationService.showSuccess(response?.message || 'Impuesto eliminado exitosamente');
+          this.store.dispatch(new GetTaxes());
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al eliminar el impuesto');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
 
   @Action(DeleteAllTax)
   deleteAll(ctx: StateContext<TaxStateModel>, { ids }: DeleteAllTax) {
-    // Delete All Tax Logic Here
+    return this.taxService.deleteMultipleTaxes(ids).pipe(
+      tap({
+        next: (response: any) => {
+          const state = ctx.getState();
+          const filteredData = state.tax.data.filter(tax => !ids.includes(tax.id));
+          
+          ctx.setState({
+            ...state,
+            tax: {
+              data: filteredData,
+              total: state.tax.total - ids.length
+            },
+            selectedTax: null
+          });
+          
+          this.notificationService.showSuccess(response?.message || `${ids.length} impuestos eliminados exitosamente`);
+          this.store.dispatch(new GetTaxes());
+        },
+        error: err => {
+          this.notificationService.showError(err?.error?.message || 'Error al eliminar los impuestos');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
   }
   
 

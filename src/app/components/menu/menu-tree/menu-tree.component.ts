@@ -27,7 +27,15 @@ export class MenuTreeComponent {
   @ViewChild("deleteModal") DeleteModal: DeleteModalComponent;
 
   @Input() type: string;
-  @Input() data: Menu[];
+  private _data: Menu[] = [];
+  @Input() 
+  set data(value: Menu[]) {
+    this._data = value || [];
+    this.updateDataToShow();
+  }
+  get data(): Menu[] {
+    return this._data;
+  }
   @Input() recursionKey: string;
   @Input() displayKey: string = 'title';
   @Input() categoryType: string | null = 'product';
@@ -42,17 +50,9 @@ export class MenuTreeComponent {
       
     this.treeSearch.valueChanges
         .subscribe(
-          (data) => {
-        if(data) {
-            this.dataToShow = [];
-            this.data.forEach(item =>{
-              this.hasValue(item) && this.dataToShow.push(item)
-            })
-        } else {
-            this.dataToShow = this.data;
-            
-        }
-    });
+          (searchValue) => {
+            this.applySearchFilter(searchValue || '');
+        });
   }
 
 
@@ -74,27 +74,74 @@ export class MenuTreeComponent {
   }
 
   ngOnChanges() {
-    this.dataToShow = this.data;
-    this.addKey(this.dataToShow)
+    // Este método se mantiene por compatibilidad, pero el setter de data ya maneja la actualización
+    this.updateDataToShow();
   }
 
-  addKey(data: Menu[]){
+  private updateDataToShow() {
+    this.dataToShow = this.data || [];
+    if (this.dataToShow && this.dataToShow.length > 0) {
+      this.addKey(this.dataToShow);
+    }
+    // Si hay un valor de búsqueda activo, aplicar el filtro
+    if (this.treeSearch?.value) {
+      this.applySearchFilter(this.treeSearch.value);
+    }
+  }
+
+  private applySearchFilter(searchValue: string) {
+    if (!searchValue) {
+      this.dataToShow = this.data || [];
+      return;
+    }
+    
+    this.dataToShow = [];
+    if (this.data && Array.isArray(this.data)) {
+      this.data.forEach(item => {
+        if (item && this.hasValue(item)) {
+          this.dataToShow.push(item);
+        }
+      });
+    }
+  }
+
+  addKey(data: Menu[] | undefined | null){
+    // Validar que data exista y sea un array antes de iterar
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return;
+    }
+    
     data.forEach(item => {
-      item['show'] = true;
-      this.addKey(item.child);
-    })
+      if (item) {
+        item['show'] = true;
+        // Solo llamar recursivamente si child existe y es un array
+        if (item.child && Array.isArray(item.child) && item.child.length > 0) {
+          this.addKey(item.child);
+        }
+      }
+    });
   }
 
   hasValue(item: any) {
+    if (!item) return false;
+    
     let valueToReturn = false;
-    if(item[this.displayKey].toLowerCase().includes(this.treeSearch?.value?.toLowerCase())){
+    const displayValue = item[this.displayKey];
+    const searchValue = this.treeSearch?.value?.toLowerCase();
+    
+    if (displayValue && searchValue && displayValue.toLowerCase().includes(searchValue)){
       valueToReturn = true;
     }
-    item[this.recursionKey]?.length && item[this.recursionKey].forEach((child: Category) => {
-      if(this.hasValue(child)) {
-        valueToReturn = true;
-      }
-    });
+    
+    // Validar que recursionKey exista y sea un array antes de iterar
+    const recursionData = item[this.recursionKey];
+    if (recursionData && Array.isArray(recursionData) && recursionData.length > 0) {
+      recursionData.forEach((child: Category) => {
+        if (child && this.hasValue(child)) {
+          valueToReturn = true;
+        }
+      });
+    }
     return valueToReturn;
   }
   
@@ -106,10 +153,16 @@ export class MenuTreeComponent {
   }
 
   updateShortNumbers(items: any[]) {
+    if (!items || !Array.isArray(items)) {
+      return;
+    }
+    
     items.forEach((item, index) => {
-      item.short = index + 1;
-      if (item.subtasks) {
-        this.updateShortNumbers(item.subtasks);
+      if (item) {
+        item.sort = index;
+        if (item.child && Array.isArray(item.child) && item.child.length > 0) {
+          this.updateShortNumbers(item.child);
+        }
       }
     });
   }

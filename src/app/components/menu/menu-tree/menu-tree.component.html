@@ -16,7 +16,7 @@
 
             <ng-template #renderMenuLevel let-items>
                 <ul cdkDropList class="menu-level" (cdkDropListDropped)="drop($event, items)">
-                    @for(node of items; track node.id){
+                    @for(node of items; track node?.id || $index){
                     <li class="cursor-pointer" [class.inside-ul]="node.child && node.child.length" cdkDrag>
                         <div>
                             @if(node.child && node.child.length){

@@ -842,7 +842,8 @@ hr {
 }
 
 .notice-section {
-  @include flex_common ($dis: flex, $align: center, $justify: space-between);
+
+  @include flex_common ($dis: none, $align: center, $justify: space-between);
   background-color: white;
   margin-bottom: 30px;
   position: relative;

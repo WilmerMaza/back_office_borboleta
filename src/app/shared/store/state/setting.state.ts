@@ -3,8 +3,10 @@ import { Action, Selector, State, StateContext } from "@ngxs/store";
 import { tap } from "rxjs";
 import { NotificationService } from "../../services/notification.service";
 import { SettingService } from "../../services/setting.service";
+import { ErrorService } from "../../services/error.service";
 import { GetAppSettingOption, GetSettingOption, TestEmail, UpdateAppSettingOption, UpdateSettingOption } from "../action/setting.action";
 import { AppValues, Values } from "../../interface/setting.interface";
+import { HttpErrorResponse } from "@angular/common/http";
 
 export class SettingStateModel {
   setting: Values | null;
@@ -21,8 +23,11 @@ export class SettingStateModel {
 @Injectable()
 export class SettingState {
 
-  constructor(private settingService: SettingService, 
-    private notificationService: NotificationService) {}
+  constructor(
+    private settingService: SettingService, 
+    private notificationService: NotificationService,
+    private errorService: ErrorService
+  ) {}
   
   @Selector()
   static setting(state: SettingStateModel) {
@@ -39,12 +44,26 @@ export class SettingState {
     return this.settingService.getSettingOption().pipe(
       tap({
         next: (result) => {
-          ctx.patchState({
-            setting: result.values,
-          });
+          // Solo actualizar el estado si hay valores válidos
+          if (result && result.values) {
+            ctx.patchState({
+              setting: result.values,
+            });
+          } else {
+            // Si no hay valores, establecer null para indicar que no hay configuración
+            // NO mostrar ningún log - silenciar completamente
+            ctx.patchState({
+              setting: null,
+            });
+          }
         },
-        error: (err) => {
-          throw new Error(err?.error?.message);
+        error: (err: HttpErrorResponse | Error) => {
+          // Establecer el estado como null para indicar que no hay configuración disponible
+          // NO mostrar ningún log ni error - silenciar completamente
+          // El servicio ya maneja el caso cuando el archivo no existe
+          ctx.patchState({
+            setting: null,
+          });
         },
       })
     );
