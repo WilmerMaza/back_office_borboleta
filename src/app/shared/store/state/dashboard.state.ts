@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
 import { Action, Selector, State, StateContext } from "@ngxs/store";
-import { tap } from "rxjs";
+import { tap, catchError } from "rxjs";
+import { of } from "rxjs";
 import { GetStatisticsCount, GetRevenueChart } from "../action/dashboard.action";
 import { StatisticsCount, RevenueChart } from "./../../interface/dashboard.interface";
 import { DashboardService } from "../../services/dashboard.service";
+import { HttpErrorResponse } from "@angular/common/http";
 
 export class DashboardStateModel {
   statistics: StatisticsCount | null;
@@ -40,10 +42,19 @@ export class DashboardState {
           ctx.patchState({
             statistics: result,
           });
-        },
-        error: err => { 
-          throw new Error(err?.error?.message);
         }
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Extraer mensaje de error de forma segura
+        const errorMessage = this.extractErrorMessage(error);
+        
+        // Loggear el error para depuración
+        console.error('Error al obtener estadísticas del dashboard:', errorMessage, error);
+        
+        // No actualizar el estado en caso de error, mantener el estado anterior
+        // El error será manejado por el GlobalErrorHandlerInterceptor
+        // Retornar un observable vacío para evitar que el error se propague y rompa la aplicación
+        return of(null);
       })
     );
   }
@@ -56,12 +67,48 @@ export class DashboardState {
           ctx.patchState({
             revenueChart: result,
           });
-        },
-        error: err => { 
-          throw new Error(err?.error?.message);
         }
+      }),
+      catchError((error: HttpErrorResponse | any) => {
+        // Extraer mensaje de error de forma segura
+        const errorMessage = this.extractErrorMessage(error);
+        
+        // Loggear el error para depuración
+        console.error('Error al obtener gráfico de ingresos:', errorMessage, error);
+        
+        // No actualizar el estado en caso de error, mantener el estado anterior
+        // El error será manejado por el GlobalErrorHandlerInterceptor
+        // Retornar un observable vacío para evitar que el error se propague y rompa la aplicación
+        return of(null);
       })
     );
+  }
+
+  /**
+   * Extrae el mensaje de error de forma segura
+   */
+  private extractErrorMessage(error: HttpErrorResponse | any): string {
+    if (error instanceof HttpErrorResponse) {
+      // Si es un HttpErrorResponse, intentar extraer el mensaje
+      if (error.error && typeof error.error === 'object' && 'message' in error.error) {
+        return error.error.message || 'Error desconocido';
+      }
+      if (typeof error.error === 'string') {
+        return error.error;
+      }
+      return error.message || `Error ${error.status}: ${error.statusText}`;
+    }
+    
+    // Si es un error genérico
+    if (error?.message) {
+      return error.message;
+    }
+    
+    if (typeof error === 'string') {
+      return error;
+    }
+    
+    return 'Error desconocido al obtener datos del dashboard';
   }
 
 }

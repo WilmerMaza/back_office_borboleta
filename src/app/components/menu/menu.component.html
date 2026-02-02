@@ -11,11 +11,13 @@
                 </div>
              </div>
           </div>
-          <app-menu-tree 
-             [data]="(menu$ | async)?.data?.length ? (menu$ | async)?.data : []" 
-             [recursionKey]="'child'" 
-             [type]="'menu'">
-          </app-menu-tree>
+          @if (menu$ | async; as menu) {
+            <app-menu-tree 
+               [data]="menu?.data || []" 
+               [recursionKey]="'child'" 
+               [type]="'menu'">
+            </app-menu-tree>
+          }
        </app-page-wrapper>
     </div>
     <div class="col-xl-8 p-0">

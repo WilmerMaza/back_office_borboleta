@@ -13,25 +13,15 @@ export class DashboardService {
   constructor(private http: HttpClient) {}
 
   getStatisticsCount(payload?: Params): Observable<StatisticsCount> {
-    const token = this.getToken();
-    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-    
+    // El AuthInterceptor se encarga automáticamente de agregar el token de autenticación
+    // No es necesario manejar el token manualmente aquí
     return this.http.get<StatisticsCount>(`${environment.URL}/statistics`, {
-      headers: headers,
       params: payload
     });
   }
 
   getRevenueChart(): Observable<RevenueChart> {
     return this.http.get<RevenueChart>(`assets/data/chart.json`);
-  }
-
-  // Método privado para obtener el token del localStorage
-  private getToken(): string | null {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      return localStorage.getItem('access_token');
-    }
-    return null;
   }
 
 }

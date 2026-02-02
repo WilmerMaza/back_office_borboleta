@@ -32,9 +32,13 @@ export class NotificationService {
   }
 
   showError(message: string): void {
+    // No mostrar notificaciones para mensajes vacíos o relacionados con tokens
+    if (!message || message.trim() === '' || message === 'Token de acceso requerido' || message.includes('Token de acceso requerido')) {
+      return;
+    }
+    
     this.alertSubject.next({type: 'error', message: message});
       this.zone.run(() => {    
-        console.log("🚀 ~ NotificationService ~ this.zone.run ~ message:", message)
         if(this.notification) {
           this.toastr.error(message);
         }
