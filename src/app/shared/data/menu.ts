@@ -74,6 +74,14 @@ export const menu: Sidebar[] = [
         },
         {
           parent_id: 3,
+          title: "discounts",
+          path: "/discount",
+          type: "link",
+          level: 2,
+          permission: ["product.index", "product.edit"]
+        },
+        {
+          parent_id: 3,
           title: "attributes",
           path: "/attribute",
           type: "link",
@@ -410,6 +418,14 @@ export const menu: Sidebar[] = [
           type: "link",
           level: 2,
           permission: ["theme_option.index"]
+        },
+        {
+          parent_id: 20,
+          title: "Drive",
+          path: "https://drive.google.com",
+          type: "link",
+          level: 2,
+          externalLink: true
         }
       ]
     },

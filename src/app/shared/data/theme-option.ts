@@ -50,6 +50,18 @@ export const image_variant: Select2Data = [
 ]
 
 
+export const typographies: Select2Data = [
+    { value: 'Montserrat', label: 'Montserrat' },
+    { value: 'Open Sans', label: 'Open Sans' },
+    { value: 'Roboto', label: 'Roboto' },
+    { value: 'Poppins', label: 'Poppins' },
+    { value: 'Lato', label: 'Lato' },
+    { value: 'Oswald', label: 'Oswald' },
+    { value: 'Raleway', label: 'Raleway' },
+    { value: 'Playfair Display', label: 'Playfair Display' },
+    { value: 'Ubuntu', label: 'Ubuntu' },
+];
+
 export const header_options: Select2Data = [
     {   
         value: 'header_one',

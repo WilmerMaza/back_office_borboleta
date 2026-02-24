@@ -1,0 +1,165 @@
+<app-page-wrapper [gridClass]="'col-sm-12'" [title]="'discounts'">
+  <div class="row">
+    <div class="col-lg-4 col-md-12 mb-4">
+      <div class="discount-panel theme-table p-4 rounded">
+        <h5 class="mb-4">{{ 'discount_settings' | translate }}</h5>
+        <form [formGroup]="discountForm">
+          <app-form-fields
+            [labelClass]="'form-label-title mb-2'"
+            [gridClass]="'col-12'"
+            [label]="'discount'"
+            [for]="'discount_value'"
+            [required]="true">
+            <div class="input-group">
+              <input
+                class="form-control"
+                id="discount_value"
+                type="number"
+                min="0"
+                max="100"
+                placeholder="{{ 'enter_discount' | translate }}"
+                formControlName="discount">
+              <span class="input-group-text">%</span>
+            </div>
+            @if(discountForm.get('discount')?.invalid && discountForm.get('discount')?.touched){
+              <div class="invalid-feedback d-block">
+                {{ 'please_enter_a_valid_discount' | translate }}
+              </div>
+            }
+          </app-form-fields>
+
+          <app-form-fields
+            [labelClass]="'form-label-title mb-2'"
+            [gridClass]="'col-12'"
+            [label]="'sale_status'"
+            [for]="'is_sale_enable'"
+            [required]="false">
+            <div class="form-check form-switch ps-0">
+              <label class="switch">
+                <input type="checkbox" id="is_sale_enable" formControlName="is_sale_enable">
+                <span class="switch-state"></span>
+              </label>
+            </div>
+          </app-form-fields>
+
+          <app-form-fields
+            [labelClass]="'form-label-title mb-2'"
+            [gridClass]="'col-12'"
+            [label]="'sale_start_date'"
+            [for]="'sale_starts_at'"
+            [required]="false">
+            @if(isBrowser) {
+              <div class="input-group custom-dt-picker">
+                <input
+                  class="form-control"
+                  placeholder="{{ 'yyyy-mm-dd' | translate }}"
+                  [value]="fromDate ? formatter.format(fromDate) : ''"
+                  readonly
+                  ngbDatepicker
+                  #dpFrom="ngbDatepicker"
+                  (dateSelect)="onStartDateSelect($event); dpFrom.close()">
+                <button class="btn btn-light-bg-secondary" (click)="dpFrom.toggle()" type="button">
+                  <i class="ri-calendar-line"></i>
+                </button>
+              </div>
+            }
+          </app-form-fields>
+
+          <app-form-fields
+            [labelClass]="'form-label-title mb-2'"
+            [gridClass]="'col-12'"
+            [label]="'sale_end_date'"
+            [for]="'sale_expired_at'"
+            [required]="false">
+            @if(isBrowser) {
+              <div class="input-group custom-dt-picker">
+                <input
+                  class="form-control"
+                  placeholder="{{ 'yyyy-mm-dd' | translate }}"
+                  [value]="toDate ? formatter.format(toDate) : ''"
+                  readonly
+                  ngbDatepicker
+                  #dpTo="ngbDatepicker"
+                  (dateSelect)="onEndDateSelect($event); dpTo.close()">
+                <button class="btn btn-light-bg-secondary" (click)="dpTo.toggle()" type="button">
+                  <i class="ri-calendar-line"></i>
+                </button>
+              </div>
+            }
+          </app-form-fields>
+
+          <p class="text-muted small mb-3">{{ 'discount_preview_info' | translate }}</p>
+        </form>
+      </div>
+    </div>
+
+    <div class="col-lg-8 col-md-12">
+      <app-table
+        [tableConfig]="tableConfig"
+        [hasCheckbox]="true"
+        [hasApplyDiscount]="true"
+        [hasDuplicate]="false"
+        (tableChanged)="onTableChange($event)"
+        (action)="onActionClicked($event)">
+        <div filter class="top-panel-selection">
+          <button class="align-items-center btn d-flex h-100 btn-light-bg fs-5 px-3 py-1" (click)="openFilter()">
+            <i class="ri-filter-3-line"></i>
+          </button>
+        </div>
+
+        @if(open){
+          <div advanceFilter class="show-box mb-4 d-block product-category-option">
+            <div class="row g-sm-4 g-3">
+              @if((user$ | async)?.role?.name !== 'vendor' && (setting$ | async)?.activation?.multivendor){
+                <div class="col-xl-3 col-lg-6 col-md-3 col-sm-6">
+                  @if(isBrowser) {
+                    <select2 class="custom-select"
+                      [data]="(store$ | async)?.length ? (store$ | async) : []"
+                      [placeholder]="'select_store' | translate"
+                      multiple="true"
+                      (update)="filters($event, 'store_ids')"
+                      [noResultMessage]="'no_data_found' | translate"
+                      resettable>
+                    </select2>
+                  }
+                </div>
+              }
+              <div [class]="(user$ | async)?.role?.name !== 'vendor' && (setting$ | async)?.activation?.multivendor ? 'col-xl-2 col-lg-6 col-md-3 col-sm-6' : 'col-md-4'">
+                @if(isBrowser) {
+                  <select2 class="custom-select"
+                    [placeholder]="'select_product_type' | translate"
+                    [data]="mainProductType.length ? mainProductType : []"
+                    (update)="applyFilter($event)"
+                    [noResultMessage]="'no_data_found' | translate"
+                    resettable>
+                  </select2>
+                }
+              </div>
+              <div class="col-xl-4 col-lg-6 col-md-3 col-sm-6">
+                <app-advance-dropdown
+                  [text]="'select_categories'"
+                  [selectSingle]="false"
+                  [options]="(category$ | async) ? (category$ | async)?.data : []"
+                  [subArrayKey]="'subcategories'"
+                  (selectedItem)="selectItem($event)">
+                </app-advance-dropdown>
+              </div>
+              <div [class]="(user$ | async)?.role?.name !== 'vendor' && (setting$ | async)?.activation?.multivendor ? 'col-xl-3 col-lg-6 col-md-3 col-sm-6' : 'col-md-4'">
+                @if(isBrowser) {
+                  <select2 class="custom-select"
+                    [data]="(brand$ | async)?.length ? (brand$ | async) : []"
+                    [placeholder]="'select_brands' | translate"
+                    multiple="true"
+                    (update)="filters($event, 'brand_ids')"
+                    [noResultMessage]="'no_data_found' | translate"
+                    resettable>
+                  </select2>
+                }
+              </div>
+            </div>
+          </div>
+        }
+      </app-table>
+    </div>
+  </div>
+</app-page-wrapper>
