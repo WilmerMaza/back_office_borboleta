@@ -20,6 +20,12 @@
                <i [class]="'ri-file-copy-line'"></i> {{ 'duplicate' | translate }}
             </a>
          }
+
+         @if(hasApplyDiscount && selected?.length){
+            <a href="javascript:void(0)" class="align-items-center btn btn-theme btn-sm d-flex" (click)="action.emit({actionToPerform: 'applyDiscount', data: selected}); $event.preventDefault(); $event.stopPropagation()">
+               <i class="ri-percent-line"></i> {{ 'apply_discount' | translate }}
+            </a>
+         }
       </div>
       <div class="role-search">
          @if(dateRange){

@@ -26,6 +26,19 @@ export class UpdateProductStatus {
   constructor(public id: number, public status: boolean) {}
 }
 
+export interface ProductDiscountBulkPayload {
+  productIds: number[];
+  discount: number;
+  is_sale_enable: boolean;
+  sale_starts_at?: string | null;
+  sale_expired_at?: string | null;
+}
+
+export class UpdateProductDiscountBulk {
+  static readonly type = "[Product] Update Discount Bulk";
+  constructor(public payload: ProductDiscountBulkPayload) {}
+}
+
 export class ApproveProductStatus {
   static readonly type = "[Product] Approve Status";
   constructor(public id: number, public status: boolean) {}

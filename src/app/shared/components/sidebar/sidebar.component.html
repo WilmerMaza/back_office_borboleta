@@ -42,41 +42,59 @@
                   && (!menu?.canAllow || (menu?.canAllow?.length && role && menu?.canAllow?.includes(role)))){
                      <li [class.sidebar-list]="menu.type == 'sub'" *hasPermission="menu?.permission">
                         @if(menu.type === 'sub'){
-                           <a href="javascript:void(0)" [ngClass]="{'debar-link sidebar-title link-nav sidebar-link': menu.level === 1 , 'activated': menu.children && menu.active }" [routerLink]="menu.path" [queryParams]="menu.params" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="onItemSelected(menu)">
-                              <span>
-                                 <div class="d-flex align-items-center">
-                                    @if(menu.icon){
-                                       <i class="{{ menu.icon }}"></i>
+                           @if(menu.externalLink && menu.path){
+                              <a [ngClass]="{'debar-link sidebar-title link-nav sidebar-link': menu.level === 1 , 'activated': menu.children && menu.active }" [href]="menu.path" target="_blank" rel="noopener noreferrer" (click)="onItemSelected(menu)">
+                                 <span>
+                                    <div class="d-flex align-items-center">
+                                       @if(menu.icon){
+                                          <i class="{{ menu.icon }}"></i>
+                                       }
+                                       <div class="sidebar-main-link">{{ menu.title.replace(' ', '_') | translate }}</div>
+                                    </div>
+                                    @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
+                                       <span [class]="menu?.badgeType">{{ menu?.badgeValue }}</span>
                                     }
-                                    <div class="sidebar-main-link">{{ menu.title.replace(' ', '_') | translate }}</div>
-                                 </div>
-   
-                                 @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
-                                    <span [class]="menu?.badgeType">
-                                       {{ menu?.badgeValue }}
-                                    </span>
+                                 </span>
+                                 @if(menu.children){
+                                    <div class="according-menu"><i class="ri-{{ menu.active ? 'subtract' : 'add' }}-line"></i></div>
                                  }
-                              </span>
-   
-                              @if(menu.children){
-                                 <div class="according-menu">
-                                    <!-- <i class="ri-arrow-{{ menu.active ? 'down' : 'right' }}-s-line"></i> -->
-                                    <i class="ri-{{ menu.active ? 'subtract' : 'add' }}-line"></i>
-                                 </div>
-                              }
-                           </a>
+                              </a>
+                           } @else {
+                              <a href="javascript:void(0)" [ngClass]="{'debar-link sidebar-title link-nav sidebar-link': menu.level === 1 , 'activated': menu.children && menu.active }" [routerLink]="menu.path" [queryParams]="menu.params" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="onItemSelected(menu)">
+                                 <span>
+                                    <div class="d-flex align-items-center">
+                                       @if(menu.icon){
+                                          <i class="{{ menu.icon }}"></i>
+                                       }
+                                       <div class="sidebar-main-link">{{ menu.title.replace(' ', '_') | translate }}</div>
+                                    </div>
+                                    @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
+                                       <span [class]="menu?.badgeType">{{ menu?.badgeValue }}</span>
+                                    }
+                                 </span>
+                                 @if(menu.children){
+                                    <div class="according-menu"><i class="ri-{{ menu.active ? 'subtract' : 'add' }}-line"></i></div>
+                                 }
+                              </a>
+                           }
                         }
                         <!-- Submenu Link -->
                         @if(menu.type === 'link'){
-                           <a href="javascript:void(0)" [routerLink]="menu.path" [queryParams]="menu.params" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
-                              <div>{{ menu.title.replace(' ', '_') | translate }}</div>
-
-                              @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
-                                 <span [class]="menu?.badgeType">
-                                    {{ menu?.badgeValue }}
-                                 </span>
-                              }
-                           </a>
+                           @if(menu.externalLink && menu.path){
+                              <a [href]="menu.path" target="_blank" rel="noopener noreferrer" (click)="closeSidebar()">
+                                 <div>{{ menu.title.replace(' ', '_') | translate }}</div>
+                                 @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
+                                    <span [class]="menu?.badgeType">{{ menu?.badgeValue }}</span>
+                                 }
+                              </a>
+                           } @else {
+                              <a href="javascript:void(0)" [routerLink]="menu.path" [queryParams]="menu.params" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="closeSidebar()">
+                                 <div>{{ menu.title.replace(' ', '_') | translate }}</div>
+                                 @if(menu?.badgeType && menu?.badgeValue != '0' && menu?.badgeValue){
+                                    <span [class]="menu?.badgeType">{{ menu?.badgeValue }}</span>
+                                 }
+                              </a>
+                           }
                         }
                         <ul class="sidebar-submenu" [class.show]="menu.children && menu.active">
                            <ng-container *ngTemplateOutlet="recursiveMenu; context: { $implicit: menu.children }"></ng-container>

@@ -34,6 +34,7 @@ export class TableComponent {
   @Input() tableConfig: TableConfig;
   @Input() hasCheckbox: boolean = false;
   @Input() hasDuplicate: boolean = false;
+  @Input() hasApplyDiscount: boolean = false;
   @Input() topbar: boolean = true;
   @Input() pagination: boolean = true;
   @Input() loading: boolean = true;
@@ -93,7 +94,7 @@ export class TableComponent {
       if(permissions?.length && !permissions.some(action => this.permissions?.includes(<any>action))){
         this.tableConfig['rowActions'] = [];
       }
-      if(!this.hasPermission(['delete']) && !this.hasDuplicate) {
+      if(!this.hasPermission(['delete']) && !this.hasDuplicate && !this.hasApplyDiscount) {
         this.hasCheckbox = false;
       }
     });

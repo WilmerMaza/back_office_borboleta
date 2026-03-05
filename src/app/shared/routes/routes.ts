@@ -22,6 +22,10 @@ export const content: Routes = [
     loadChildren: () => import('../../components/product/product.routes').then(r => r.productRoutes)
   },
   {
+    path: 'discount',
+    loadChildren: () => import('../../components/discount/discount.routes').then(r => r.discountRoutes)
+  },
+  {
     path: 'attribute',
     loadChildren: () => import('../../components/attribute/attribute.routes').then(r => r.attributeRoutes)
   },

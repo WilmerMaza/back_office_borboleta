@@ -46,11 +46,13 @@ export class ProductBoxComponent implements OnChanges {
 
   getDisplayPrice(product: Product): { price: number; isRange: boolean; prefix: string } {
     if (product.type === 'classified' && product.variations?.length) {
-      // Calcular el precio más bajo con descuento aplicado
       const prices = product.variations.map(v => {
-        const finalPrice = v.discount 
-          ? v.price - (v.price * v.discount / 100)
-          : v.price;
+        const price = v.price ?? 0;
+        const discount = v.discount ?? 0;
+        const salePrice = v.sale_price;
+        const finalPrice = (salePrice != null && salePrice > 0)
+          ? salePrice
+          : (discount ? price - (price * discount / 100) : price);
         return finalPrice;
       });
       

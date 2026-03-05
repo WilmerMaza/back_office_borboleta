@@ -17,7 +17,7 @@
             <div class="right-sidebar-modal">
                <h4 class="title-name">{{ selectedVariation ? selectedVariation.name : product.name }}</h4>
                <h4 class="price">
-                  {{ (selectedVariation ? selectedVariation.sale_price : product.sale_price) | currencySymbol }}
+                  {{ getEffectivePrice(selectedVariation, product) | currencySymbol }}
                   @if(selectedVariation ? selectedVariation.discount : product.discount){
                      <del>
                         {{ (selectedVariation ? selectedVariation.price : product.price) | currencySymbol }}

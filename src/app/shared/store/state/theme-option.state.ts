@@ -44,8 +44,22 @@ export class ThemeOptionState {
   }
 
   @Action(UpdateThemeOption)
-  UpdateThemeOption( ctx: StateContext<ThemeOptionStateModel>, action: UpdateThemeOption) {
-    // Update Theme Option Logic Here
+  UpdateThemeOption(ctx: StateContext<ThemeOptionStateModel>, action: UpdateThemeOption) {
+    return this.themeOptionService.updateThemeOption(action.payload.options).pipe(
+      tap({
+        next: (result: ThemeOption) => {
+          const options = result?.options ?? action.payload.options;
+          ctx.patchState({
+            theme_option: options,
+          });
+          this.notificationService.showSuccess((result as { message?: string })?.message || 'Theme options actualizados exitosamente');
+        },
+        error: (err) => {
+          this.notificationService.showError(err?.error?.message || 'Error al actualizar theme options');
+          throw new Error(err?.error?.message);
+        },
+      })
+    );
   }
 
 }

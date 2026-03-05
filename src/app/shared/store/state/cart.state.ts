@@ -3,6 +3,7 @@ import { Action, Selector, State, StateContext, Store, NgxsOnInit } from "@ngxs/
 import { of, tap } from "rxjs";
 import { AddToCart, AddToCartLocalStorage, ClearCart, DeleteCart, GetCartItems, LoadCartFromLocalStorage, ToggleSidebarCart, UpdateCart } from "../action/cart.action";
 import { Cart } from "../../interface/cart.interface";
+import { Product, Variation } from "../../interface/product.interface";
 import { CartService } from "../../services/cart.service";
 import { NotificationService } from "../../services/notification.service";
 
@@ -53,6 +54,16 @@ export class CartState implements NgxsOnInit {
     return state.sidebarCartOpen;
   }
 
+  private getEffectiveSalePrice(variation: Variation | null | undefined, product: Product | undefined): number {
+    const target = variation || product;
+    if (!target) return 0;
+    const price = target.price ?? 0;
+    const discount = target.discount ?? 0;
+    const salePrice = target.sale_price;
+    if (salePrice != null && salePrice > 0) return salePrice;
+    return discount ? price - (price * discount / 100) : price;
+  }
+
   @Action(GetCartItems)
   getCartItems(ctx: StateContext<CartStateModel>) {
     // La carga inicial se hace en ngxsOnInit()
@@ -67,12 +78,12 @@ export class CartState implements NgxsOnInit {
     if(action.payload.id){
       this.store.dispatch(new UpdateCart(action.payload));
     } else {
-      let salePrice = action.payload.variation ?  action.payload.variation.sale_price : action.payload.product?.sale_price;
+      const salePrice = this.getEffectiveSalePrice(action.payload.variation, action.payload.product);
       let result: any = {
         items: [{
           id: Number(Math.floor(Math.random() * 10000).toString().padStart(4, '0')), // Generate Random Id
           quantity: action.payload.quantity,
-          sub_total: salePrice ? salePrice * action.payload.quantity : 0,
+          sub_total: salePrice * action.payload.quantity,
           product: action.payload.product!,
           product_id: action.payload.product_id,
           variation: action.payload.variation!,
@@ -104,13 +115,12 @@ export class CartState implements NgxsOnInit {
 
   @Action(AddToCartLocalStorage)
   addToLocalStorage(ctx: StateContext<CartStateModel>, action: AddToCartLocalStorage) {
-    // Lógica de agregar producto al carrito
-    let salePrice = action.payload.variation ? action.payload.variation.sale_price : action.payload.product?.sale_price;
+    const salePrice = this.getEffectiveSalePrice(action.payload.variation, action.payload.product);
     let result: any = {
       items: [{
         id: Number(Math.floor(Math.random() * 10000).toString().padStart(4, '0')),
         quantity: action.payload.quantity,
-        sub_total: salePrice ? salePrice * action.payload.quantity : 0,
+        sub_total: salePrice * action.payload.quantity,
         product: action.payload.product!,
         product_id: action.payload.product_id,
         variation: action.payload.variation!,
@@ -153,21 +163,22 @@ export class CartState implements NgxsOnInit {
 
     cart[index].quantity = cart[index]?.quantity + action?.payload.quantity;
 
+    const effectivePrice = this.getEffectiveSalePrice(cart[index]?.variation, cart[index]?.product);
     if(cart[index].product?.wholesales?.length) {
       let wholesale = cart[index].product.wholesales.find(value => value.min_qty <= cart[index].quantity && value.max_qty >= cart[index].quantity) || null;
       if(wholesale && cart[index].product.wholesale_price_type == 'fixed') {
         cart[index].sub_total = cart[index].quantity * wholesale.value;
         cart[index].wholesale_price = cart[index].sub_total / cart[index].quantity;
       } else if(wholesale && cart[index].product.wholesale_price_type == 'percentage') {
-        cart[index].sub_total = cart[index].quantity * (cart[index]?.variation ? cart[index]?.variation?.sale_price : cart[index].product.sale_price);
+        cart[index].sub_total = cart[index].quantity * effectivePrice;
         cart[index].sub_total = cart[index].sub_total - (cart[index].sub_total * (wholesale.value / 100));
         cart[index].wholesale_price = cart[index].sub_total / cart[index].quantity;
       } else {
-        cart[index].sub_total = cart[index]?.quantity * (cart[index]?.variation ? cart[index]?.variation?.sale_price : cart[index].product.sale_price);
+        cart[index].sub_total = cart[index].quantity * effectivePrice;
         cart[index].wholesale_price = null;
       }
     } else {
-      cart[index].sub_total = cart[index]?.quantity * (cart[index]?.variation ? cart[index]?.variation?.sale_price : cart[index].product.sale_price);
+      cart[index].sub_total = cart[index].quantity * effectivePrice;
       cart[index].wholesale_price = null;
     }
 

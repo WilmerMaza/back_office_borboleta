@@ -1,12 +1,13 @@
 import { Injectable } from "@angular/core";
 import { Store, Action, Selector, State, StateContext } from "@ngxs/store";
+import { forkJoin, of, switchMap } from "rxjs";
 import { tap } from "rxjs";
 import { Select2Data } from "ng-select2-component";
 import { UpdateBadgeValue } from "../action/sidebar.action";
 import { GetProducts, CreateProduct, EditProduct,
          UpdateProduct, UpdateProductStatus, ApproveProductStatus, DeleteProduct,
          DeleteAllProduct, ReplicateProduct, ExportProduct, ImportProduct,
-         Download} from "../action/product.action";
+         Download, UpdateProductDiscountBulk} from "../action/product.action";
 import { Product, ProductModel, Variation } from "../../interface/product.interface";
 import { ProductService } from "../../services/product.service";
 import { NotificationService } from "../../services/notification.service";
@@ -162,17 +163,16 @@ export class ProductState {
     return this.productService.getProductById(id).pipe(
       tap({
         next: (result: any) => {
-          // Extraer el producto de la respuesta del backend
-          // Manejar diferentes estructuras: { data: { product: ... } }, { data: ... }, o el producto directamente
-          let product;
-          if (result?.data?.product) {
-            product = result.data.product;
-          } else if (result?.data) {
-            product = result.data;
+          const data = result?.data;
+          let product: any;
+          if (data?.product) {
+            product = data.product;
+          } else if (data) {
+            product = data;
           } else {
             product = result;
           }
-          
+
           const state = ctx.getState();
           ctx.patchState({
             ...state,
@@ -261,6 +261,77 @@ export class ProductState {
         },
         error: (err) => {
           this.notificationService.showError('Error al cambiar el estado de aprobación');
+          throw new Error(err?.error?.message);
+        }
+      })
+    );
+  }
+
+  @Action(UpdateProductDiscountBulk)
+  updateProductDiscountBulk(ctx: StateContext<ProductStateModel>, { payload }: UpdateProductDiscountBulk) {
+    const { productIds, discount, is_sale_enable, sale_starts_at, sale_expired_at } = payload;
+    const state = ctx.getState();
+
+    const updates = productIds.map(id => {
+      return this.productService.getProductById(id).pipe(
+        switchMap((result: any) => {
+          const product = result?.data?.product || result?.data || result;
+          if (!product) return of(null);
+
+          const salePrice = product.price
+            ? (product.price - (product.price * discount / 100)).toFixed(2)
+            : 0;
+
+          let variations = product.variations;
+          if (product.type === 'classified' && variations?.length) {
+            variations = variations.map((v: Variation) => ({
+              ...v,
+              discount,
+              sale_price: (v.price - (v.price * discount / 100)).toFixed(2)
+            }));
+          }
+
+          const updatePayload: any = {
+            discount,
+            sale_price: salePrice,
+            is_sale_enable,
+            sale_starts_at: sale_starts_at || null,
+            sale_expired_at: sale_expired_at || null
+          };
+          if (product.type === 'classified' && variations?.length) {
+            updatePayload.variations = variations;
+          }
+
+          return this.productService.updateProduct(updatePayload as any, id);
+        })
+      );
+    });
+
+    return forkJoin(updates).pipe(
+      tap({
+        next: (results: any[]) => {
+          const updatedProducts = results.filter(Boolean).map(r => r?.data?.product || r?.data || r);
+          const updatedIds = new Set(updatedProducts.map((p: Product) => p.id));
+          const currentState = ctx.getState();
+          const newData = currentState.product.data.map((p: Product) =>
+            updatedIds.has(p.id)
+              ? updatedProducts.find((up: Product) => up.id === p.id) || p
+              : p
+          );
+          ctx.patchState({
+            product: {
+              ...currentState.product,
+              data: newData
+            }
+          });
+          this.notificationService.showSuccess(
+            `Descuento aplicado exitosamente a ${productIds.length} producto(s)`
+          );
+        },
+        error: (err) => {
+          this.notificationService.showError(
+            err?.error?.message || 'Error al aplicar el descuento'
+          );
           throw new Error(err?.error?.message);
         }
       })

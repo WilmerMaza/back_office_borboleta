@@ -8,6 +8,8 @@ export interface Sidebar {
   parent_id?: number;
   title?: string;
   path?: string;
+  /** Si es true, path se usa como href externo (ej: https://drive.google.com) en vez de routerLink */
+  externalLink?: boolean;
   active?: boolean;
   children?: Sidebar[];
   icon?: string;
