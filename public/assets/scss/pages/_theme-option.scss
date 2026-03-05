@@ -189,6 +189,14 @@
   }
 }
 
+.color-picker-thumb {
+  width: 40px !important;
+  height: 38px !important;
+  padding: 2px !important;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .layout-selection-sec {
   .theme-card {
     border: 1px solid #ddd;

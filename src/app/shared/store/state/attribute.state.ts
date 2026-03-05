@@ -55,10 +55,15 @@ export class AttributeState {
   @Selector()
   static attribute_value(state: AttributeStateModel) {
     return (id: number | null) => {
-      if(!id) return [];
-      return state?.attribute_values.filter(attr_val => +attr_val.attribute_id === id)?.map((value: AttributeValue) => {
-        return { label: value?.value, value: value?.id }
-      });
+      if (!id) return [];
+      return (
+        state?.attribute_values?.filter(
+          (attr_val: any) => +attr_val?.attribute_id === +id
+        )?.map((av: any) => ({
+          label: av?.value ?? av?.name ?? "",
+          value: av?.id ?? av?._id ?? av,
+        })) ?? []
+      );
     };
   }
 
@@ -103,11 +108,14 @@ export class AttributeState {
   getAttributeValues(ctx: StateContext<AttributeStateModel>, action: GetAttributeValues) {
     return this.attributeService.getAttributeValues(action.payload).pipe(
       tap({
-        next: result => { 
+        next: (result: any) => {
           const state = ctx.getState();
+          const values = Array.isArray(result?.data)
+            ? result.data
+            : result?.data?.data ?? [];
           ctx.patchState({
             ...state,
-            attribute_values: result.data
+            attribute_values: values
           });
         },
         error: err => { 

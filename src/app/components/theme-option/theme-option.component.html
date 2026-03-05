@@ -199,6 +199,53 @@
                                     }
                                  </app-form-fields>
                               </div>
+                              <div formGroupName="promotional_banner" class="mt-4">
+                                 <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'promotional_banner_enable'" [for]="'promotional_banner_is_enable'">
+                                    <div class="form-check form-switch ps-0">
+                                       <label class="switch">
+                                          <input type="checkbox" id="promotional_banner_is_enable" formControlName="is_enable">
+                                          <span class="switch-state"></span>
+                                       </label>
+                                    </div>
+                                 </app-form-fields>
+                                 <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'promotional_banner_text'" [for]="'promotional_banner_text'">
+                                    <input type="text" class="form-control" id="promotional_banner_text" maxlength="200"
+                                       placeholder="{{ 'enter_promotional_banner_text' | translate }}" formControlName="text">
+                                    @if(form.get('promotional_banner.text')?.touched && form.get('promotional_banner.text')?.errors?.['maxlength']){
+                                       <div class="invalid-feedback">
+                                          {{ 'promotional_banner_text_max' | translate }}
+                                       </div>
+                                    }
+                                 </app-form-fields>
+                                 <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'promotional_banner_bg_color'" [for]="'promotional_banner_bg_color'">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                       <input class="form-control color-picker-thumb" type="color" id="promotional_banner_bg_color"
+                                          [value]="form.get('promotional_banner.background_color')?.value"
+                                          (input)="form.get('promotional_banner.background_color')?.setValue($any($event.target).value)">
+                                       <input type="text" class="form-control flex-grow-1" style="min-width: 120px; max-width: 180px"
+                                          placeholder="#212121" formControlName="background_color">
+                                    </div>
+                                 </app-form-fields>
+                                 <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'promotional_banner_text_color'" [for]="'promotional_banner_text_color'">
+                                    <div class="d-flex gap-2 align-items-center flex-wrap">
+                                       <input class="form-control color-picker-thumb" type="color" id="promotional_banner_text_color"
+                                          [value]="form.get('promotional_banner.text_color')?.value"
+                                          (input)="form.get('promotional_banner.text_color')?.setValue($any($event.target).value)">
+                                       <input type="text" class="form-control flex-grow-1" style="min-width: 120px; max-width: 180px"
+                                          placeholder="#ffffff" formControlName="text_color">
+                                    </div>
+                                 </app-form-fields>
+                                 <app-form-fields [labelClass]="'form-label-title col-sm-3 mb-0'" [gridClass]="'col-sm-9'" [label]="'promotional_banner_font_style'" [for]="'promotional_banner_font_style'">
+                                    @if(isBrowser) {
+                                      <select2 class="custom-select"
+                                         [data]="typographies"
+                                         [placeholder]="'select_typography' | translate"
+                                         formControlName="font_family"
+                                         noResultMessage="{{ 'no_data_found' | translate }}">
+                                      </select2>
+                                    }
+                                 </app-form-fields>
+                              </div>
                            </div>
                         </div>
                      </ng-template>

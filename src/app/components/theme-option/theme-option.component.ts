@@ -2,7 +2,7 @@ import { CommonModule, DOCUMENT, isPlatformBrowser } from '@angular/common';
 import { Component, inject, Inject, PLATFORM_ID, Renderer2 } from '@angular/core';
 import {
   FormArray, FormBuilder, FormControl, FormGroup,
-  FormsModule, ReactiveFormsModule
+  FormsModule, ReactiveFormsModule, Validators
 } from '@angular/forms';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { TranslateModule } from '@ngx-translate/core';
@@ -61,6 +61,7 @@ export class ThemeOptionComponent {
   public footer_layout: Select2Data = data.footer_layout;
   public image_variant: Select2Data = data.image_variant;
   public header_options: Select2Data = data.header_options;
+  public typographies: Select2Data = data.typographies;
   public useful_link = data.useful_link;
   public blog_sidebar = data.blog_sidebar_type;
   public help_center = data.help_center;
@@ -94,6 +95,7 @@ export class ThemeOptionComponent {
       label: 'Dark',
     }
   ];
+
 
   public cart_style: Select2Data = [
     {
@@ -326,6 +328,13 @@ export class ThemeOptionComponent {
         auth: new FormGroup({
           image_url: new FormControl(''),
         }),
+      }),
+      promotional_banner: new FormGroup({
+        is_enable: new FormControl(true),
+        text: new FormControl('', [Validators.maxLength(200)]),
+        background_color: new FormControl('#212121'),
+        text_color: new FormControl('#ffffff'),
+        font_family: new FormControl('Montserrat')
       }),
       seo: new FormGroup({
         meta_tags: new FormControl(''),
@@ -603,6 +612,13 @@ export class ThemeOptionComponent {
           auth: {
              image_url: option?.popup?.auth?.image_url,
           },
+        },
+        promotional_banner: {
+          is_enable: option?.promotional_banner?.is_enable ?? true,
+          text: option?.promotional_banner?.text ?? '',
+          background_color: option?.promotional_banner?.background_color ?? '#212121',
+          text_color: option?.promotional_banner?.text_color ?? '#ffffff',
+          font_family: option?.promotional_banner?.font_family ?? 'Montserrat',
         },
       });
 

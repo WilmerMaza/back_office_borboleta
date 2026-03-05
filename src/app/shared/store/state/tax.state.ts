@@ -1,6 +1,7 @@
 import { Injectable } from "@angular/core";
 import { Store, Action, Selector, State, StateContext } from "@ngxs/store";
-import { tap } from "rxjs";
+import { catchError, tap } from "rxjs/operators";
+import { of } from "rxjs";
 import { GetTaxes, CreateTax, EditTax, 
          UpdateTax, UpdateTaxStatus, DeleteTax, 
          DeleteAllTax } from "../action/tax.action";
@@ -52,27 +53,21 @@ export class TaxState {
 
   @Action(GetTaxes)
   getTaxes(ctx: StateContext<TaxStateModel>, action: GetTaxes) {
-    console.log('🔍 [TAX] GetTaxes - Payload:', action.payload);
     return this.taxService.getTaxes(action.payload).pipe(
-      tap({
-        next: result => { 
-          console.log('✅ [TAX] GetTaxes - Response completa:', result);
-          console.log('📊 [TAX] GetTaxes - result.data:', result.data);
-          console.log('📊 [TAX] GetTaxes - result.total:', result?.total);
-          console.log('📊 [TAX] GetTaxes - result.current_page:', (result as any)?.current_page);
-          console.log('📊 [TAX] GetTaxes - result.per_page:', (result as any)?.per_page);
-          ctx.patchState({
-            tax: {
-              data: result.data,
-              total: result?.total ? result?.total : result.data?.length
-            }
-          });
-        },
-        error: err => { 
-          console.error('❌ [TAX] GetTaxes - Error:', err);
-          console.error('❌ [TAX] GetTaxes - Error details:', err?.error);
-          throw new Error(err?.error?.message);
+      tap(result => {
+        ctx.patchState({
+          tax: {
+            data: result.data,
+            total: result?.total ? result?.total : result.data?.length
+          }
+        });
+      }),
+      catchError(err => {
+        if (err?.status === 401) {
+          return of(null);
         }
+        this.notificationService.showError(err?.error?.message || 'Error al cargar impuestos');
+        return of(null);
       })
     );
   }

@@ -171,15 +171,26 @@ export class AddToCartComponent {
     this.checkStockAvailable();
   }
 
+  getEffectivePrice(variation: Variation | null, product: Product): number {
+    const target = variation || product;
+    if (!target) return 0;
+    const price = target.price ?? 0;
+    const discount = target.discount ?? 0;
+    const salePrice = target.sale_price;
+    if (salePrice != null && salePrice > 0) return salePrice;
+    return discount ? price - (price * discount / 100) : price;
+  }
+
   wholesalePriceCal() {
-    let wholesale = this.product.wholesales.find(value => value.min_qty <= this.productQty && value.max_qty >= this.productQty) || null;
+    const effectivePrice = this.getEffectivePrice(this.selectedVariation, this.product);
+    let wholesale = this.product?.wholesales?.find(value => value.min_qty <= this.productQty && value.max_qty >= this.productQty) || null;
     if(wholesale && this.product.wholesale_price_type == 'fixed') {
       this.totalPrice = this.productQty * wholesale.value;
     } else if(wholesale && this.product.wholesale_price_type == 'percentage') {
-      this.totalPrice = this.productQty * (this.selectedVariation ? this.selectedVariation.sale_price : this.product.sale_price);
+      this.totalPrice = this.productQty * effectivePrice;
       this.totalPrice = this.totalPrice - (this.totalPrice * (wholesale.value / 100));
     } else {
-      this.totalPrice = this.productQty * (this.selectedVariation ? this.selectedVariation.sale_price : this.product.sale_price);
+      this.totalPrice = this.productQty * effectivePrice;
     }
   }
 

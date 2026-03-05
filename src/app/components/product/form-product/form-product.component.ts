@@ -41,7 +41,6 @@ import {
   Select2Data,
   Select2Module,
   Select2SearchEvent,
-  Select2UpdateEvent,
 } from "ng-select2-component";
 import { CategoryModel } from "../../../shared/interface/category.interface";
 import { TagModel } from "../../../shared/interface/tag.interface";
@@ -55,27 +54,16 @@ import {
   ReactiveFormsModule,
   Validators,
 } from "@angular/forms";
-import {
-  Product,
-  Variant,
-  Variation,
-  VariationCombination,
-  WholesalePrice,
-} from "../../../shared/interface/product.interface";
+import { Product, WholesalePrice } from "../../../shared/interface/product.interface";
 import { MediaConfig, mediaConfig } from "../../../shared/data/media-config";
 import { Editor, NgxEditorModule } from "ngx-editor";
 import { ActivatedRoute, Router } from "@angular/router";
 import { CommonModule, DOCUMENT, isPlatformBrowser } from "@angular/common";
 import { GetStores } from "../../../shared/store/action/store.action";
-import {
-  GetAttributeValues,
-  GetAttributes,
-} from "../../../shared/store/action/attribute.action";
 import { GetCategories } from "../../../shared/store/action/category.action";
 import { GetTags } from "../../../shared/store/action/tag.action";
 import { GetTaxes } from "../../../shared/store/action/tax.action";
 import { GetBrands } from "../../../shared/store/action/brand.action";
-import { AttributeState } from "../../../shared/store/state/attribute.state";
 import { priceValidator } from "../../../shared/validator/price-validator";
 import {
   CreateProduct,
@@ -135,16 +123,12 @@ export class FormProductComponent {
   ) as Observable<Values>;
   brand$: Observable<Select2Data> = inject(Store).select(BrandState.brands);
 
-  public attribute$: Observable<Select2Data>;
   public active = "general";
   public tabError: string[] | null = [];
   public form: FormGroup;
   public id: number;
   public selectedCategories: number[] = [];
   public selectedTags: number[] = [];
-  public variationCombinations: VariationCombination[] = [];
-  public retrieveVariants: boolean = false;
-  public variantCount: number = 0;
   public fromDate: NgbDate | null;
   public toDate: NgbDate | null;
   public hoveredDate: NgbDate | null = null;
@@ -174,10 +158,6 @@ export class FormProductComponent {
     {
       value: "simple",
       label: "Simple Product",
-    },
-    {
-      value: "classified",
-      label: "Variable Product",
     },
   ];
 
@@ -280,15 +260,6 @@ export class FormProductComponent {
     is_approved: 1,
   };
 
-  public variants: Variant[] = [
-    {
-      id: null,
-      attribute_values: null,
-      options: null,
-      variant_option: null,
-    },
-  ];
-  public variations: Variation[] = [];
 
   public wholesalePrices: WholesalePrice[] = [];
   public isBrowser: boolean;
@@ -307,16 +278,10 @@ export class FormProductComponent {
   ) {
     this.isBrowser = isPlatformBrowser(platformId);
     this.store.dispatch(new GetStores({ status: 1, is_approved: 1 }));
-    this.store.dispatch(new GetAttributes({ status: 1 }));
-    this.store.dispatch(new GetAttributeValues({ status: 1 }));
     this.store.dispatch(new GetCategories({ type: "product", status: 1 }));
     this.store.dispatch(new GetTags({ type: "product", status: 1 }));
     this.store.dispatch(new GetTaxes({ status: 1 }));
     this.store.dispatch(new GetBrands({ status: 1 }));
-
-    this.attribute$ = this.store
-      .select(AttributeState.attributes)
-      .pipe(map((filterFn) => filterFn("")));
 
     this.form = this.formBuilder.group({
       product_type: new FormControl("physical", [Validators.required]),
@@ -391,14 +356,6 @@ export class FormProductComponent {
     this.textArea.setValue(this.html);
   }
 
-  get variantControl(): FormArray {
-    return this.form.get("variants") as FormArray;
-  }
-
-  get variationControl(): FormArray {
-    return this.form.get("variations") as FormArray;
-  }
-
   get wholesalePriceControl(): FormArray {
     return this.form.get("wholesale_prices") as FormArray;
   }
@@ -462,8 +419,9 @@ export class FormProductComponent {
               product?.categories?.map((value) => value?.id!) || [];
             this.selectedTags = product?.tags?.map((value) => value?.id!) || [];
 
-            let attributes =
-              product?.attributes?.map((value) => value?.id) || [];
+            // Obtener IDs de atributos: primero product.attributes, luego attributes_ids,
+            // y si no hay, desde variations
+            let attributes: number[] = [];
             let galleries =
               product?.product_galleries?.map((value) => value?.id) || [];
             let digitalFiles =
@@ -483,6 +441,10 @@ export class FormProductComponent {
 
             if (product) this.product = product;
             this.id = product?.id!;
+
+            (this.form.get("variants") as FormArray)?.clear();
+            this.wholesalePriceControl.clear();
+
             this.form.patchValue({
               product_type: product?.product_type
                 ? product?.product_type
@@ -491,7 +453,7 @@ export class FormProductComponent {
               short_description: product?.short_description,
               description: product?.description,
               store_id: product?.store_id,
-              type: product?.type,
+              type: product?.type === "classified" ? "simple" : product?.type,
               is_external: product?.is_external,
               external_url: product?.external_url,
               external_button_text: product?.external_button_text,
@@ -546,73 +508,6 @@ export class FormProductComponent {
               status: product?.status,
             });
 
-            // Create Variants
-            let variants = attributes?.map((attr) => {
-              let matchingVariations = product?.variations.filter(
-                (variation) => {
-                  return variation.attribute_values.some(
-                    (attrVal) => attrVal?.attribute_id == attr
-                  );
-                }
-              );
-
-              let attributeValues = matchingVariations?.reduce(
-                (acc: any, variation) => {
-                  let values = variation.attribute_values
-                    .filter((attrVal) => attrVal?.attribute_id == attr)
-                    .map((attrVal) => attrVal?.id);
-                  return values ? [...new Set([...acc, ...values])] : acc;
-                },
-                []
-              );
-
-              let options = matchingVariations?.reduce(
-                (acc: any, variation) => {
-                  let attrVal = variation.attribute_values.find(
-                    (attrVal) => attrVal.attribute_id == attr
-                  );
-                  if (!acc.some((opt: any) => opt?.value == attrVal?.id)) {
-                    acc.push({ label: attrVal?.value, value: attrVal?.id });
-                  }
-                  return acc;
-                },
-                []
-              );
-
-              return {
-                id: attr,
-                attribute_values: attributeValues,
-                options: options,
-                variant_option: [],
-              };
-            });
-
-            // Set Variants and Variations
-            this.variants = <any>variants;
-            this.variations = product?.variations!;
-
-            if (product?.type == "classified") {
-              this?.variants?.forEach((variant) => {
-                this.variantControl.push(
-                  this.formBuilder.group({
-                    id: new FormControl(variant?.id, []),
-                    attribute_values: new FormControl(
-                      variant?.attribute_values,
-                      []
-                    ),
-                    options: new FormControl(variant?.options, []),
-                    variant_option: new FormControl(
-                      variant?.variant_option,
-                      []
-                    ),
-                  })
-                );
-              });
-              this.retrieveVariants = true;
-            } else {
-              this.clearVariations();
-            }
-
             if (product?.wholesale_price_type && product?.wholesales?.length) {
               product?.wholesales?.forEach((wholesale) => {
                 this.wholesalePriceControl.push(
@@ -633,41 +528,6 @@ export class FormProductComponent {
             }
           },
         });
-      });
-
-    if (this.type == "create") {
-      this.variants.forEach((variant) =>
-        this.variantControl.push(
-          this.formBuilder.group({
-            id: new FormControl(variant?.id, []),
-            attribute_values: new FormControl(variant?.attribute_values, []),
-            options: new FormControl(variant?.attribute_values, []),
-            variant_option: new FormControl(variant?.variant_option, []),
-          })
-        )
-      );
-    }
-
-    this.variantControl.valueChanges
-      .pipe(debounceTime(200), distinctUntilChanged())
-      .subscribe((variantValue) => {
-        let selectedAttr = variantValue
-          .filter((el: any) => el.id != null)
-          .map((val: Variant) => val.id);
-        this.attribute$ = this.store
-          .select(AttributeState.attributes)
-          .pipe(map((filterFn) => filterFn(selectedAttr.join(","))));
-
-        let variantValues = variantValue.filter(
-          (el: any) => el.attribute_values != null
-        );
-        let attributesIds = variantValues?.map((attr: Variant) => attr.id);
-
-        this.form.controls["attributes_ids"].setValue(attributesIds);
-
-        this.variationCombinations = this.generateCombinations(variantValues);
-
-        this.addVariation();
       });
 
     this.products$.subscribe((product) => {
@@ -728,17 +588,6 @@ export class FormProductComponent {
       this.form.controls["watermark_image_id"].updateValueAndValidity();
     });
 
-    this.form.controls["type"].valueChanges.subscribe((value) => {
-      if (value == "simple") {
-        this.form.controls["price"].setValidators([
-          Validators.required,
-          priceValidator,
-        ]);
-      } else {
-        this.form.controls["price"].clearValidators();
-      }
-      this.form.controls["price"].updateValueAndValidity();
-    });
   }
 
   productDropdown(event: Select2) {
@@ -749,23 +598,6 @@ export class FormProductComponent {
 
   searchProduct(event: Select2SearchEvent) {
     this.search.next(event.search);
-  }
-
-  addVariant(event: Event) {
-    event.preventDefault();
-    this.variantControl.push(
-      this.formBuilder.group({
-        id: new FormControl(),
-        attribute_values: new FormControl(),
-        options: new FormControl(),
-        variant_option: new FormControl(),
-      })
-    );
-  }
-
-  removeVariant(index: number) {
-    if (this.variantControl.length <= 1) return;
-    this.variantControl.removeAt(index);
   }
 
   addWholesalePrice(event: Event) {
@@ -786,30 +618,6 @@ export class FormProductComponent {
   removeWholesalePrice(index: number) {
     if (this.wholesalePriceControl.length <= 1) return;
     this.wholesalePriceControl.removeAt(index);
-  }
-
-  getAttributeValues(id: number | null): Observable<any> {
-    return this.store
-      .select(AttributeState.attribute_value)
-      .pipe(map((filterFn) => filterFn(id ? id : null)));
-  }
-
-  updateAttribute(data: Select2UpdateEvent, index: number) {
-    const variantControl = this.form.get("variants") as FormArray; // get the variants FormArray
-    const control = variantControl.at(index); // get the control at the specified index
-
-    let variant_option = null;
-    this.getAttributeValues(data ? +data?.value : null).subscribe(
-      (option) => (variant_option = option)
-    );
-    control.patchValue({ variant_option: variant_option }); // patch the new value
-    this.variantCount++;
-    if (!this.retrieveVariants) {
-      control.patchValue({ attribute_values: null, options: null }); // patch the new value
-    }
-    if (this.variantCount == this.variants?.length) {
-      this.retrieveVariants = false;
-    }
   }
 
   onDateSelection(date: NgbDate) {
@@ -867,110 +675,6 @@ export class FormProductComponent {
       : currentValue;
   }
 
-  updateAttributeValue(data: Select2UpdateEvent, index: number) {
-    const variantControl = this.form.get("variants") as FormArray;
-    const control = variantControl.at(index);
-    control.patchValue({ options: data?.options });
-  }
-
-  clearVariations() {
-    const variantsControl = this.form.get("variations") as FormArray; // assuming your FormArray group is named 'variations'
-    variantsControl.clear(); // remove all the controls from the FormArray
-  }
-
-  addVariation() {
-    this.clearVariations();
-    if (this.variationCombinations.length) {
-      this.variationCombinations.forEach((variation) => {
-        const index = this.variations.findIndex((value) =>
-          value.attribute_values.every((item) =>
-            variation?.attribute_values.includes(+item?.id!)
-          )
-        );
-        let variationValue;
-        if (index != -1 && this.variations[index]) {
-          variationValue = this.variations[index];
-        }
-        let licenseKeys;
-        if (variationValue && variationValue.separator) {
-          let separator = ",";
-          if (variationValue?.separator == "comma") {
-            separator = ",";
-          } else if (variationValue?.separator == "semicolon") {
-            separator = ";";
-          } else if (variationValue?.separator == "pipe") {
-            separator = "|";
-          }
-          licenseKeys = variationValue?.license_keys
-            .map((value) => value.license_key)
-            .join(separator);
-        }
-        this.variationControl.push(
-          this.formBuilder.group({
-            id: new FormControl(variationValue?.id, []),
-            variation_name: new FormControl(variation?.name, []),
-            name: new FormControl(variationValue?.name, [Validators.required]),
-            price: new FormControl(variationValue?.price, [
-              Validators.required,
-              priceValidator,
-            ]),
-            discount: new FormControl(variationValue?.discount, []),
-            stock_status: new FormControl(
-              variationValue?.stock_status
-                ? variationValue?.stock_status
-                : "in_stock",
-              [Validators.required]
-            ),
-            sku: new FormControl(variationValue?.sku, [Validators.required]),
-            quantity: new FormControl(variationValue?.quantity, [
-              Validators.required,
-            ]),
-            variation_image_id: new FormControl(
-              variationValue?.variation_image_id,
-              []
-            ),
-            variation_galleries_id: new FormControl(
-              variationValue?.variation_galleries_id,
-              []
-            ),
-            variation_image: new FormControl(
-              variationValue?.variation_image,
-              []
-            ),
-            variation_galleries: new FormControl(
-              variationValue?.variation_galleries,
-              []
-            ),
-            digital_file_ids: new FormControl(
-              variationValue?.digital_file_ids,
-              []
-            ),
-            digital_files: new FormControl(variationValue?.digital_files, []),
-            attribute_values: new FormControl(variation?.attribute_values, []),
-            is_licensable: new FormControl(
-              variationValue?.is_licensable ? variationValue?.is_licensable : 0
-            ),
-            is_licensekey_auto: new FormControl(
-              variationValue?.is_licensekey_auto
-                ? variationValue?.is_licensekey_auto
-                : 0
-            ),
-            license_keys: new FormControl(licenseKeys ? licenseKeys : ""),
-            separator: new FormControl(variationValue?.separator),
-            status: new FormControl(
-              variationValue ? +variationValue?.status : 1
-            ),
-          })
-        );
-      });
-    }
-  }
-
-  removeVariation(index: number) {
-    if (this.variationControl.length <= 1) return;
-    this.variationControl.removeAt(index);
-  }
-
   selectCategoryItem(data: Number[]) {
     if (Array.isArray(data)) {
       this.form.controls["categories"].setValue(data);
@@ -1012,21 +716,6 @@ export class FormProductComponent {
     }
   }
 
-  selectVariationImage(data: Attachment, index: number) {
-    const variationControl = this.form.get("variations") as FormArray;
-    const control = variationControl.at(+index);
-    control.patchValue({ variation_image_id: data ? data.id : "" });
-  }
-
-  selectVariantGalleriesImages(data: Attachment, index: number) {
-    let ids = Array.isArray(data)
-      ? data?.map((image) => image && image?.id)
-      : [];
-    const variationControl = this.form.get("variations") as FormArray;
-    const control = variationControl.at(+index);
-    control.patchValue({ variation_galleries_id: ids });
-  }
-
   selectWatermarkImage(data: Attachment) {
     if (!Array.isArray(data)) {
       this.form.controls["watermark_image_id"].setValue(data ? data.id : null);
@@ -1057,74 +746,6 @@ export class FormProductComponent {
     }
   }
 
-  selectVariationMainFiles(data: Attachment, index: number) {
-    const variationControl = this.form.get("variations") as FormArray;
-    const control = variationControl.at(+index);
-    let ids = Array.isArray(data)
-      ? data?.map((image) => image && image?.id)
-      : [];
-    control.patchValue({ digital_file_ids: ids });
-    if (!ids.length) {
-      control.patchValue({ is_licensekey_auto: false });
-    }
-  }
-
-  // Combination Of Variations
-  generateCombinations(
-    attributes: Variant[],
-    index = 0,
-    prefix = "",
-    attribute_values: number[] = []
-  ): any {
-    if (index >= attributes.length) {
-      if (!attribute_values.length) return [];
-      // End of recursion
-      return [{ name: prefix.replace(/\/$/, ""), attribute_values }];
-    }
-
-    const currentAttribute = attributes[index];
-    const currentOptions = currentAttribute.options;
-    const combinations = [];
-
-    if (currentOptions?.length === 1) {
-      // If attribute has only one option, include it in the prefix and IDs
-      const currentOption = currentOptions[0];
-      const newPrefix = `${prefix}${currentOption.label}/`;
-      const newIds: number[] = [
-        ...attribute_values,
-        ...currentAttribute?.attribute_values!,
-      ];
-
-      const childCombinations = this.generateCombinations(
-        attributes,
-        index + 1,
-        newPrefix,
-        newIds
-      );
-
-      combinations.push(...childCombinations);
-    } else {
-      // If attribute has multiple options, generate separate combinations for each option
-      for (let i = 0; i < currentOptions?.length!; i++) {
-        const currentOption = currentOptions?.[i]!;
-        const currentValue = currentOption?.value;
-        const newPrefix = `${prefix}${currentOption.label}/`;
-        const newIds: number[] = [...attribute_values, currentValue];
-
-        const childCombinations = this.generateCombinations(
-          attributes,
-          index + 1,
-          newPrefix,
-          newIds
-        );
-
-        combinations.push(...childCombinations);
-      }
-    }
-
-    return combinations;
-  }
-
   slugify(text: string): string {
     return text
       .toString()
@@ -1141,23 +762,18 @@ export class FormProductComponent {
 
     const { price, discount } = this.form.value;
 
+    const salePriceProduct = (price - (price * (discount || 0) / 100)).toFixed(2);
+
     const data = {
       ...this.form.value,
-      sale_price: (price - (price * discount) / 100).toFixed(2),
+      type: "simple",
+      sale_price: salePriceProduct,
       slug: this.slugify(this.form.value.name),
+      variations: [],
+      attributes_ids: [],
     };
 
     let action = new CreateProduct(data);
-
-    if (this.form.controls["type"].value === "simple") {
-      this.form.controls["variations"].patchValue([]);
-    }
-
-    // If product type simple then clear all variation
-    if (["simple", "external"].includes(this.form.controls["type"].value)) {
-      this.form.controls["attributes_ids"].setValue([]);
-      this.clearVariations();
-    }
 
     if (this.type == "edit" && this.id) {
       action = new UpdateProduct(data, this.id);
