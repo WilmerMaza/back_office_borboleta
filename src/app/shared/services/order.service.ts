@@ -19,20 +19,12 @@ export class OrderService {
     const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
     
     const endpoint = `${environment.URL}/orders/all`;
-    console.log('🔵 [OrderService.getOrders] Endpoint usado:', endpoint);
-    console.log('🔵 [OrderService.getOrders] Este es el endpoint que muestra TODOS los pedidos');
-    console.log('🔵 [OrderService.getOrders] Parámetros:', payload);
     
     return this.http.get<any>(endpoint, {
       params: payload,
       headers: headers
     }).pipe(
       map((response: any) => {
-        console.log('🟢 [OrderService.getOrders] Respuesta recibida:', response);
-        console.log('🟢 [OrderService.getOrders] Total de pedidos:', response?.total);
-        console.log('🟢 [OrderService.getOrders] Cantidad de pedidos en data:', response?.data?.length);
-        console.log('🟢 [OrderService.getOrders] ¿Es array directo?', Array.isArray(response));
-        
         // Determinar si la respuesta es un array directo o tiene estructura {data: []}
         let ordersData: Order[] = [];
         let totalCount = 0;
@@ -40,23 +32,9 @@ export class OrderService {
         if (Array.isArray(response)) {
           ordersData = response;
           totalCount = response.length;
-          console.log('🟢 [OrderService.getOrders] Cantidad de pedidos (array directo):', response.length);
         } else if (response?.data && Array.isArray(response.data)) {
           ordersData = response.data;
           totalCount = response.total || response.data.length;
-          console.log('🟢 [OrderService.getOrders] Cantidad de pedidos en response.data:', response.data.length);
-        }
-        
-        // Verificar campos de un pedido de ejemplo
-        if (ordersData.length > 0) {
-          const firstOrder = ordersData[0];
-          console.log('🟡 [OrderService.getOrders] Primer pedido completo:', firstOrder);
-          console.log('🟡 [OrderService.getOrders] Campos del primer pedido:', Object.keys(firstOrder));
-          console.log('🟡 [OrderService.getOrders] Todos los campos y valores:', JSON.stringify(firstOrder, null, 2));
-          console.log('🟡 [OrderService.getOrders] payment_status:', firstOrder?.payment_status);
-          console.log('🟡 [OrderService.getOrders] payment_method:', firstOrder?.payment_method);
-          console.log('🟡 [OrderService.getOrders] order_status:', firstOrder?.order_status);
-          console.log('🟡 [OrderService.getOrders] status:', firstOrder?.status);
         }
         
         // Construir respuesta en formato OrderModel

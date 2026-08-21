@@ -10,7 +10,7 @@
          }@else {
             <a [routerLink]="['/dashboard']">
                <h2 class="">
-                  {{(setting$ | async)?.general?.site_title ? (setting$ | async)?.general?.site_title.split(' ')[0] : 'Logo Here'}}
+                  {{(setting$ | async)?.general?.site_title ? (setting$ | async)?.general?.site_title.split(' ')[0] : 'Borboleta'}}
                </h2>
             </a>
          }  
@@ -37,23 +37,6 @@
                </a>
             </li>
          }
-         <li>
-            <a href="javascript:void(0)" class="header-fullscreen" (click)="toggleFullScreen()">
-               @if(!navServices.fullScreen){
-                  <i class="ri-fullscreen-line"></i>
-               }
-
-               @if(navServices.fullScreen){
-                  <i class="ri-fullscreen-exit-line"></i>
-               }
-            </a>
-         </li>
-         <li>
-            <app-languages></app-languages>
-         </li>
-         <li>
-            <app-notification></app-notification>
-         </li>
          <li>
             <app-mode></app-mode>
          </li>

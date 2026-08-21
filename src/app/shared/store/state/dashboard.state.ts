@@ -60,8 +60,8 @@ export class DashboardState {
   }
 
   @Action(GetRevenueChart)
-  getRevenueChart(ctx: StateContext<DashboardStateModel>) {
-    return this.dashboardService.getRevenueChart().pipe(
+  getRevenueChart(ctx: StateContext<DashboardStateModel>, action: GetRevenueChart) {
+    return this.dashboardService.getRevenueChart(action.payload).pipe(
       tap({
         next: result => { 
           ctx.patchState({

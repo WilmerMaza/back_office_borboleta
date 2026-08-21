@@ -1,6 +1,6 @@
-<app-page-wrapper [gridClass]="'col-sm-12'" [title]="'themes'">
+<app-page-wrapper [gridClass]="'col-sm-12'" [title]="'client_view'">
   <div class="row row-cols-xl-3 row-cols-lg-2 row-cols-md-3 row-cols-sm-2 row-cols-1 g-lg-5 g-4 layout-selection-sec ratio_square">
-    @for(theme of (themes$ | async)?.data; track theme.id; let i = $index){
+    @for(theme of (themesForVitrine$ | async) ?? []; track theme.id; let i = $index){
       <div>
         <div class="theme-card" [class.active]="theme?.id == selectedTheme">
           <div class="library-box">

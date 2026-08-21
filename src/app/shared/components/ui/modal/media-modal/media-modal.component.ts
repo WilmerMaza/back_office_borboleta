@@ -33,6 +33,7 @@ export class MediaModalComponent {
   @Input() url: boolean = false;
   @Input() accept = [media.mediaConfig.image, media.mediaConfig.video, media.mediaConfig.audio];
   @Input() selectedImagesIds: any;
+  @Input() maxFiles: number = 20;
 
   @ViewChild("mediaModal", { static: false }) MediaModal: TemplateRef<string>;
 
@@ -87,9 +88,11 @@ export class MediaModalComponent {
   }
 
   onSelect(event: NgxDropzoneChangeEvent) {
-    if((this.files.length + event.addedFiles.length) <= 5){
+    if ((this.files.length + event.addedFiles.length) <= this.maxFiles) {
       this.files.push(...event.addedFiles);
-    } else this.notificationService.showError(`You've reached 5 file maximum.`);
+    } else {
+      this.notificationService.showError(`You've reached ${this.maxFiles} file maximum.`);
+    }
   }
 
   onRemove(event: File) {

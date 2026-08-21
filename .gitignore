@@ -45,3 +45,6 @@ pnpm-debug.log*
 /public/assets/data/settings.json
 /src/environments/environment.*.ts
 /src/environments/environment.ts
+
+# 📄 Documentación Markdown (no versionar)
+*.md

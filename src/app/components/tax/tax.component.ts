@@ -4,16 +4,15 @@ import { TaxState } from '../../shared/store/state/tax.state';
 import { Observable } from 'rxjs';
 import { Tax, TaxModel } from '../../shared/interface/tax.interface';
 import { TableClickedAction, TableConfig } from '../../shared/interface/table.interface';
-import { Params, Router, RouterModule } from '@angular/router';
+import { Params, Router } from '@angular/router';
 import { DeleteAllTax, DeleteTax, GetTaxes, UpdateTaxStatus } from '../../shared/store/action/tax.action';
 import { TranslateModule } from '@ngx-translate/core';
-import { HasPermissionDirective } from '../../shared/directive/has-permission.directive';
 import { PageWrapperComponent } from '../../shared/components/page-wrapper/page-wrapper.component';
 import { TableComponent } from '../../shared/components/ui/table/table.component';
 
 @Component({
     selector: 'app-tax',
-    imports: [TranslateModule, RouterModule, HasPermissionDirective,
+    imports: [TranslateModule,
         PageWrapperComponent, TableComponent
     ],
     templateUrl: './tax.component.html',

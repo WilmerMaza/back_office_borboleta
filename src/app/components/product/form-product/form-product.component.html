@@ -370,7 +370,7 @@
                       <span class="input-group-text">
                         {{(setting$ | async)?.general?.default_currency.symbol ? (setting$ | async)?.general?.default_currency.symbol : '$'}}
                       </span>
-                      <input class="form-control disabled" id="sale_price" type="number" placeholder="{{'sale_price' | translate}}" value="{{ (form.get('price')?.value - (form.get('price')?.value * form.get('discount')?.value)/100).toFixed(2)}}" readonly>
+                      <input class="form-control disabled" id="sale_price" type="text" [value]="salePricePreview" placeholder="{{'sale_price' | translate}}" readonly>
                     </div>
 
                   </app-form-fields>

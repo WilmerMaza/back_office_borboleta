@@ -1,6 +1,6 @@
 import { ApplicationConfig, importProvidersFrom, provideZoneChangeDetection, APP_INITIALIZER } from '@angular/core';
 
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, IMAGE_CONFIG } from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClient, provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
@@ -95,6 +95,7 @@ export const appConfig: ApplicationConfig = {
       }),
       LoadingBarRouterModule,
       TranslateModule.forRoot({
+        defaultLanguage: 'es',
         loader: {
           provide: TranslateLoader,
           useFactory: HttpLoaderFactory,
@@ -162,6 +163,13 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideHttpClient(withInterceptorsFromDi(), withFetch()),
     provideZoneChangeDetection({ eventCoalescing: true }),
+    {
+      provide: IMAGE_CONFIG,
+      useValue: {
+        disableImageSizeWarning: true,
+        disableImageLazyLoadWarning: true,
+      },
+    },
     provideRouter(routes, withInMemoryScrolling({
       anchorScrolling: 'enabled',
       scrollPositionRestoration: 'enabled'

@@ -31,7 +31,9 @@ export class AppComponent {
     private actions: Actions, private router: Router,
     private titleService: Title, private store: Store,
     private translate: TranslateService) {
-    this.translate.use('en');
+    this.translate.addLangs(['es', 'en', 'fr']);
+    this.translate.setDefaultLang('es');
+    this.translate.use('es');
     this.store.dispatch(new GetCountries());
     this.store.dispatch(new GetStates());
     // this.store.dispatch(new GetSettingOption());
