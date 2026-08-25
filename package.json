@@ -39,7 +39,7 @@
     "bootstrap": "^5.3.3",
     "express": "^4.18.2",
     "feather-icons": "^4.29.1",
-    "ng-apexcharts": "^1.15.0",
+    "ng-apexcharts": "~1.15.0",
     "ng-select2-component": "^10.0.0",
     "ngx-dropzone": "^3.1.0",
     "ngx-editor": "^16.0.1",
@@ -65,27 +65,5 @@
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
     "typescript": "~5.5.4"
-  },
-  "overrides": {
-    "@ngxs/devtools-plugin": {
-      "@angular/core": "$@angular/core"
-    },
-    "@ngxs/form-plugin": {
-      "@angular/core": "$@angular/core",
-      "@angular/forms": "$@angular/forms"
-    },
-    "@ngxs/logger-plugin": {
-      "@angular/core": "$@angular/core"
-    },
-    "@ngxs/router-plugin": {
-      "@angular/core": "$@angular/core",
-      "@angular/router": "$@angular/router"
-    },
-    "@ngxs/storage-plugin": {
-      "@angular/core": "$@angular/core"
-    },
-    "@ngxs/store": {
-      "@angular/core": "$@angular/core"
-    }
   }
 }
