@@ -360,6 +360,31 @@ export class FormProductComponent {
     return this.form.get("wholesale_prices") as FormArray;
   }
 
+  private createWholesalePriceFormGroup(
+    wholesale?: Partial<WholesalePrice> | null
+  ): FormGroup {
+    return this.formBuilder.group({
+      id: new FormControl(wholesale?.id ?? null, []),
+      min_qty: new FormControl(wholesale?.min_qty ?? "", [
+        Validators.required,
+      ]),
+      max_qty: new FormControl(wholesale?.max_qty ?? "", [
+        Validators.required,
+      ]),
+      value: new FormControl(wholesale?.value ?? "", [Validators.required]),
+    });
+  }
+
+  /** Valor escalar para select2 / API (fixed | percentage | null). */
+  private normalizeWholesalePriceType(v: unknown): string | null {
+    if (v == null || v === "") return null;
+    if (typeof v === "object" && v !== null && "value" in v) {
+      const inner = (v as { value: unknown }).value;
+      return inner == null || inner === "" ? null : String(inner);
+    }
+    return String(v);
+  }
+
   ngOnInit() {
     if (this.isBrowser) {
       this.editor = new Editor();
@@ -445,85 +470,75 @@ export class FormProductComponent {
             (this.form.get("variants") as FormArray)?.clear();
             this.wholesalePriceControl.clear();
 
-            this.form.patchValue({
-              product_type: product?.product_type
-                ? product?.product_type
-                : "physical",
-              name: product?.name,
-              short_description: product?.short_description,
-              description: product?.description,
-              store_id: product?.store_id,
-              type: product?.type === "classified" ? "simple" : product?.type,
-              is_external: product?.is_external,
-              external_url: product?.external_url,
-              external_button_text: product?.external_button_text,
-              is_licensable: product?.is_licensable,
-              is_licensekey_auto: product?.is_licensekey_auto,
-              separator: product?.separator,
-              license_key: licenseKeys,
-              digital_file_ids: digitalFiles,
-              preview_type: product?.preview_type,
-              preview_video_file_id: product?.preview_video_file_id,
-              preview_audio_file_id: product?.preview_audio_file_id,
-              preview_url: product?.preview_url,
-              wholesale_price_type: product?.wholesale_price_type,
-              unit: product?.unit,
-              weight: product?.weight,
-              stock_status: product?.stock_status,
-              sku: product?.sku,
-              quantity: product?.quantity,
-              price: product?.price,
-              discount: product?.discount,
-              is_sale_enable: product?.is_sale_enable,
-              sale_starts_at: product?.sale_starts_at,
-              sale_expired_at: product?.sale_expired_at,
-              tags: this.selectedTags,
-              categories: this.selectedCategories,
-              brand_id: product?.brand_id,
-              is_random_related_products: product?.is_random_related_products,
-              related_products: product?.related_products,
-              cross_sell_products: product?.cross_sell_products,
-              product_thumbnail_id: product?.product_thumbnail_id,
-              product_galleries_id: galleries,
-              watermark: 0,
-              watermark_position: product?.watermark_position,
-              watermark_image_id: product?.watermark_image_id,
-              size_chart_image_id: product?.size_chart_image_id,
-              attributes_ids: attributes,
-              meta_title: product?.meta_title,
-              meta_description: product?.meta_description,
-              product_meta_image_id: product?.product_meta_image_id,
-              safe_checkout: product?.safe_checkout,
-              secure_checkout: product?.secure_checkout,
-              social_share: product?.social_share,
-              encourage_order: product?.encourage_order,
-              encourage_view: product?.encourage_view,
-              is_free_shipping: product?.is_free_shipping,
-              is_return: product?.is_return,
-              tax_id: product?.tax_id,
-              estimated_delivery_text: product?.estimated_delivery_text,
-              return_policy_text: product?.return_policy_text,
-              is_featured: product?.is_featured,
-              is_trending: product?.is_trending,
-              status: product?.status,
-            });
+            this.form.patchValue(
+              {
+                product_type: product?.product_type
+                  ? product?.product_type
+                  : "physical",
+                name: product?.name,
+                short_description: product?.short_description,
+                description: product?.description,
+                store_id: product?.store_id,
+                type: product?.type === "classified" ? "simple" : product?.type,
+                is_external: product?.is_external,
+                external_url: product?.external_url,
+                external_button_text: product?.external_button_text,
+                is_licensable: product?.is_licensable,
+                is_licensekey_auto: product?.is_licensekey_auto,
+                separator: product?.separator,
+                license_key: licenseKeys,
+                digital_file_ids: digitalFiles,
+                preview_type: product?.preview_type,
+                preview_video_file_id: product?.preview_video_file_id,
+                preview_audio_file_id: product?.preview_audio_file_id,
+                preview_url: product?.preview_url,
+                wholesale_price_type: product?.wholesale_price_type,
+                unit: product?.unit,
+                weight: product?.weight,
+                stock_status: product?.stock_status,
+                sku: product?.sku,
+                quantity: product?.quantity,
+                price: product?.price,
+                discount: product?.discount,
+                is_sale_enable: product?.is_sale_enable,
+                sale_starts_at: product?.sale_starts_at,
+                sale_expired_at: product?.sale_expired_at,
+                tags: this.selectedTags,
+                categories: this.selectedCategories,
+                brand_id: product?.brand_id,
+                is_random_related_products: product?.is_random_related_products,
+                related_products: product?.related_products,
+                cross_sell_products: product?.cross_sell_products,
+                product_thumbnail_id: product?.product_thumbnail_id,
+                product_galleries_id: galleries,
+                watermark: 0,
+                watermark_position: product?.watermark_position,
+                watermark_image_id: product?.watermark_image_id,
+                size_chart_image_id: product?.size_chart_image_id,
+                attributes_ids: attributes,
+                meta_title: product?.meta_title,
+                meta_description: product?.meta_description,
+                product_meta_image_id: product?.product_meta_image_id,
+                safe_checkout: product?.safe_checkout,
+                secure_checkout: product?.secure_checkout,
+                social_share: product?.social_share,
+                encourage_order: product?.encourage_order,
+                encourage_view: product?.encourage_view,
+                is_free_shipping: product?.is_free_shipping,
+                is_return: product?.is_return,
+                tax_id: product?.tax_id,
+                estimated_delivery_text: product?.estimated_delivery_text,
+                return_policy_text: product?.return_policy_text,
+                is_featured: product?.is_featured,
+                is_trending: product?.is_trending,
+                status: product?.status,
+              },
+              { emitEvent: false }
+            );
 
             if (product?.wholesale_price_type && product?.wholesales?.length) {
-              product?.wholesales?.forEach((wholesale) => {
-                this.wholesalePriceControl.push(
-                  this.formBuilder.group({
-                    id: new FormControl(wholesale?.id, []),
-                    min_qty: new FormControl(wholesale?.min_qty, [
-                      Validators.required,
-                    ]),
-                    max_qty: new FormControl(wholesale?.max_qty, [
-                      Validators.required,
-                    ]),
-                    value: new FormControl(wholesale?.value, [
-                      Validators.required,
-                    ]),
-                  })
-                );
+              product.wholesales.forEach((w) => {
+                this.wholesalePriceControl.push(this.createWholesalePriceFormGroup(w));
               });
             }
           },
@@ -571,11 +586,26 @@ export class FormProductComponent {
     this.form.controls["product_type"].valueChanges.subscribe((value) => {
       if (value === "external") {
         this.form.controls["external_url"].setValidators([Validators.required]);
+        this.form.controls["wholesale_price_type"].setValue(null, {
+          emitEvent: false,
+        });
+        this.wholesalePriceControl.clear();
       } else {
         this.form.controls["external_url"].clearValidators();
       }
       this.form.controls["external_url"].updateValueAndValidity();
     });
+
+    this.form.controls["wholesale_price_type"].valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((v) => {
+        const t = this.normalizeWholesalePriceType(v);
+        if (!t) {
+          this.wholesalePriceControl.clear();
+        } else if (this.wholesalePriceControl.length === 0) {
+          this.wholesalePriceControl.push(this.createWholesalePriceFormGroup());
+        }
+      });
 
     this.form.controls["watermark"].valueChanges.subscribe((value) => {
       if (value) {
@@ -604,14 +634,7 @@ export class FormProductComponent {
     event.preventDefault();
     this.wholesalePriceControl.markAllAsTouched();
     if (this.wholesalePriceControl.valid) {
-      this.wholesalePriceControl.push(
-        this.formBuilder.group({
-          id: new FormControl(),
-          min_qty: new FormControl("", [Validators.required]),
-          max_qty: new FormControl("", [Validators.required]),
-          value: new FormControl("", [Validators.required]),
-        })
-      );
+      this.wholesalePriceControl.push(this.createWholesalePriceFormGroup());
     }
   }
 
@@ -757,18 +780,79 @@ export class FormProductComponent {
       .replace(/-+$/, "");
   }
 
+  /** Convierte valor de input / API a número (evita cálculos erróneos con strings). */
+  private toAmount(value: unknown, fallback = 0): number {
+    if (value === null || value === undefined || value === "") return fallback;
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    const s = String(value).trim().replace(/\s/g, "");
+    const n = Number(s.replace(",", "."));
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  /** Precio de oferta mostrado en el formulario (misma lógica que al guardar). */
+  get salePricePreview(): string {
+    const p = this.toAmount(this.form?.get("price")?.value);
+    const d = this.toAmount(this.form?.get("discount")?.value);
+    if (!Number.isFinite(p)) return "";
+    return (p - (p * d) / 100).toFixed(2);
+  }
+
   submit(redirect: boolean = true) {
     this.form.markAllAsTouched();
 
-    const { price, discount } = this.form.value;
+    const fv = this.form.getRawValue();
+    const priceNum = this.toAmount(fv.price);
+    const discountNum = this.toAmount(fv.discount);
 
-    const salePriceProduct = (price - (price * (discount || 0) / 100)).toFixed(2);
+    const salePriceRaw =
+      priceNum - (priceNum * discountNum) / 100;
+    const salePriceProduct = Number(salePriceRaw.toFixed(2));
+
+    const wholesaleType = this.normalizeWholesalePriceType(fv.wholesale_price_type);
+    const wholesaleRows = fv.wholesale_prices ?? [];
+
+    const wholesales =
+      wholesaleType && Array.isArray(wholesaleRows)
+        ? wholesaleRows.map(
+            (w: {
+              id?: number | string | null;
+              min_qty: number | string;
+              max_qty: number | string;
+              value: number | string;
+            }) => {
+              const row: {
+                id?: number;
+                min_qty: number;
+                max_qty: number;
+                value: number;
+              } = {
+                min_qty: Number(w.min_qty),
+                max_qty: Number(w.max_qty),
+                value: Number(w.value),
+              };
+              if (
+                w.id != null &&
+                w.id !== "" &&
+                !Number.isNaN(Number(w.id))
+              ) {
+                row.id = Number(w.id);
+              }
+              return row;
+            }
+          )
+        : [];
+
+    const { wholesale_prices: _wp, ...rest } = fv;
 
     const data = {
-      ...this.form.value,
+      ...rest,
+      price: priceNum,
+      discount: discountNum,
+      wholesale_price_type: wholesaleType,
+      wholesales,
       type: "simple",
       sale_price: salePriceProduct,
-      slug: this.slugify(this.form.value.name),
+      slug: this.slugify(fv.name),
       variations: [],
       attributes_ids: [],
     };

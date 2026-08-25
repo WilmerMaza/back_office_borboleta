@@ -19,10 +19,11 @@
          <li [ngbNavItem]="'upload'" *hasPermission="'attachment.create'">
             <a ngbNavLink>{{ 'upload_new' | translate }}</a>
             <ng-template ngbNavContent>
-               <div class="content-section drop-files-sec" ngx-dropzone accept="{{ accept?.join() }}" (change)="onSelect($event)">
+               <ngx-dropzone class="content-section drop-files-sec" [multiple]="true" [expandable]="true" [accept]="accept?.join()" (change)="onSelect($event)">
                   <ngx-dropzone-label>
                      <div>
                         <h2>{{ 'drop_files_here' | translate }}</h2>
+                        <p class="mt-1">{{ 'You can select up to' }} {{ maxFiles }} {{ 'files at once' }}</p>
                      </div>
                   </ngx-dropzone-label>
                   @for(f of files; track f){
@@ -38,7 +39,7 @@
                         </ngx-dropzone-preview>
                      }
                   }
-               </div>
+               </ngx-dropzone>
             </ng-template>
          </li>
       </ul>

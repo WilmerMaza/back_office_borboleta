@@ -13,7 +13,7 @@
 
         @for(status of filterPills; track status.id){
           <li [class.active]="selectedStatus === status.value ? 'active' : ''" [class]="status.color">
-            <a href="javascript:void(0)" (click)="filterOrder(status.value)">{{ status.label }} <span>{{status.count}}</span></a>
+            <a href="javascript:void(0)" (click)="filterOrder(status.value)">{{ status.label | translate }} <span>{{status.count}}</span></a>
           </li>
         }
       </ul>

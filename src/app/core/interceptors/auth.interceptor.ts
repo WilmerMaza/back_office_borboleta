@@ -6,7 +6,7 @@ import { NotificationService } from "../../shared/services/notification.service"
 import { Observable, catchError, throwError } from "rxjs";
 import { AuthClear } from "../../shared/store/action/auth.action";
 import { isPlatformBrowser, isPlatformServer } from "@angular/common";
-import { environment } from "src/environments/environment.development";
+import { environment } from "../../../environments/environment";
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -52,12 +52,16 @@ export class AuthInterceptor implements HttpInterceptor {
   }
 
   private isNodeApi(url: string): boolean {
+    const apiBase = this.NODE_API.replace(/\/$/, "");
+    if (url.startsWith(apiBase)) {
+      return true;
+    }
     try {
-      const u = new URL(url, typeof window !== 'undefined' ? window.location.origin : 'http://localhost');
-      const backendOrigin = this.NODE_API.replace('/api', '');
+      const u = new URL(url, typeof window !== "undefined" ? window.location.origin : "http://localhost");
+      const backendOrigin = apiBase.replace(/\/api\/?$/, "");
       return u.origin === backendOrigin;
-    } catch (error) { 
-      return false; 
+    } catch {
+      return false;
     }
   }
 

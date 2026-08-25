@@ -7,7 +7,7 @@
       }@else {
          <a [routerLink]="['/dashboard']">
             <h2 class="text-white">
-               {{(setting$ | async)?.general?.site_name ? (setting$ | async)?.general?.site_name : 'Logo Here'}}
+               {{(setting$ | async)?.general?.site_name ? (setting$ | async)?.general?.site_name : 'Borboleta'}}
             </h2>
          </a>
       }
@@ -15,8 +15,10 @@
       @if((setting$ | async )?.general?.tiny_logo_image){
          <img class="img-fluid logo-sm" [src]="(setting$ | async )?.general?.tiny_logo_image?.original_url" alt="logo">
       }@else {
+         @let settings = (setting$ | async)?.general;
+         @let brandLabel = ((settings?.site_name || settings?.site_title || 'Borboleta') + '').trim() || 'Borboleta';
          <h2 class="text-white logo-sm">
-            {{(setting$ | async)?.general?.site_title ? (setting$ | async)?.general?.site_title.substr(0, 2)?.toString()?.toUpperCase() : 'Logo'}}
+            {{ brandLabel.charAt(0).toUpperCase() }}
          </h2>
       }
 

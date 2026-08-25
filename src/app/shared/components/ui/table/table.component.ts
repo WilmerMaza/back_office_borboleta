@@ -293,7 +293,13 @@ export class TableComponent {
       }
     }
 
-    return value;
+    if (value === null || value === undefined) {
+      return '';
+    }
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+    return typeof value === 'string' ? value : String(value ?? '');
   }
 
   ngOnDestroy() {

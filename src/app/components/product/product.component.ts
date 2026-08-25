@@ -81,6 +81,7 @@ export class ProductComponent {
       { title: "name", dataField: "name", sortable: true, sort_direction: 'desc' },
       { title: "sku", dataField: "sku", sortable: true, sort_direction: 'desc' },
       { title: "price", dataField: "price", type: 'price', sortable: true, sort_direction: 'desc' },
+      { title: "stock_quantity", dataField: "quantity", sortable: true, sort_direction: 'desc' },
       { title: "stock", dataField: "stock" },
       { title: "store", dataField: "store_name" },
       { title: "approved", dataField: "is_approved", type: "switch", canAllow: ['admin'] },

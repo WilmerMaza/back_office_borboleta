@@ -4,16 +4,15 @@ import { CurrencyState } from '../../shared/store/state/currency.state';
 import { Observable } from 'rxjs';
 import { Currency, CurrencyModel } from '../../shared/interface/currency.interface';
 import { TableClickedAction, TableConfig } from '../../shared/interface/table.interface';
-import { Params, Router, RouterModule } from '@angular/router';
+import { Params, Router } from '@angular/router';
 import { DeleteAllCurrency, DeleteCurrency, GetCurrencies, UpdateCurrencyStatus } from '../../shared/store/action/currency.action';
 import { TranslateModule } from '@ngx-translate/core';
-import { HasPermissionDirective } from '../../shared/directive/has-permission.directive';
 import { PageWrapperComponent } from '../../shared/components/page-wrapper/page-wrapper.component';
 import { TableComponent } from '../../shared/components/ui/table/table.component';
 
 @Component({
     selector: 'app-currency',
-    imports: [TranslateModule, RouterModule, HasPermissionDirective,
+    imports: [TranslateModule,
         PageWrapperComponent, TableComponent
     ],
     templateUrl: './currency.component.html',

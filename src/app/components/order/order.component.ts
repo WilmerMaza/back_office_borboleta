@@ -11,7 +11,7 @@ import { CommonModule, DOCUMENT } from '@angular/common';
 import { GetOrders } from '../../shared/store/action/order.action';
 import { GetOrderStatus } from '../../shared/store/action/order-status.action';
 import { GetStatisticsCount } from '../../shared/store/action/dashboard.action';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { HasPermissionDirective } from '../../shared/directive/has-permission.directive';
 import { PageWrapperComponent } from '../../shared/components/page-wrapper/page-wrapper.component';
 import { TableComponent } from '../../shared/components/ui/table/table.component';
@@ -49,38 +49,38 @@ export class OrderComponent {
   public filterPills: any[] = [
     {
       value: 'pending',
-      label: 'Pending',
+      label: 'pending',
       countKey: 'total_pending_orders',
       color: 'pending',
     },
     {
       value: 'processing',
-      label: 'Processing',
+      label: 'processing',
       countKey: 'total_processing_orders',
       color: 'processing',
 
     },
     {
       value: 'cancelled',
-      label: 'Cancelled',
+      label: 'cancelled',
       countKey: 'total_cancelled_orders',
       color: 'cancel',
     },
     {
       value: 'shipped',
-      label: 'Shipped',
+      label: 'shipped',
       countKey: 'total_shipped_orders',
       color: 'shipped',
     },
     {
       value: 'out-for-delivery',
-      label: 'Out for delivery',
+      label: 'out_for_delivery',
       countKey: 'total_out_of_delivery_orders',
       color: 'out-delivery',
     },
     {
       value: 'delivered',
-      label: 'Delivered',
+      label: 'delivered',
       countKey: 'total_delivered_orders',
       color: 'completed',
     },
@@ -90,7 +90,20 @@ export class OrderComponent {
 
   constructor(private store: Store, private activatedRoute: ActivatedRoute,
     private router: Router, private renderer: Renderer2,
+    private translate: TranslateService,
     @Inject(DOCUMENT) private document: Document) {
+  }
+
+  private getOrderStatusLabel(slug: string, fallbackName?: string): string {
+    const key = slug.replace(/-/g, '_');
+    const translated = this.translate.instant(key);
+    if (translated !== key) {
+      return translated;
+    }
+    if (fallbackName) {
+      return fallbackName.replace(/_/g, ' ');
+    }
+    return slug.replace(/-/g, ' ');
   }
 
   ngOnInit() {
@@ -166,12 +179,7 @@ export class OrderComponent {
               nameToFormat = statusSlug.replace(/-/g, ' ');
             }
             
-            // Formatear el nombre: reemplazar guiones bajos por espacios y capitalizar cada palabra
-            const formattedName = nameToFormat
-              .replace(/_/g, " ")
-              .split(" ")
-              .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-              .join(" ");
+            const formattedName = this.getOrderStatusLabel(statusSlug, nameToFormat);
               
             console.log('🟢 [OrderComponent] Estado final para orden', element?.order_number, ':', {slug: statusSlug, name: formattedName});
             (element as any).order_status_display = `<div class="status-${statusSlug}"><span>${formattedName}</span></div>`;

@@ -21,7 +21,7 @@ import { ButtonComponent } from '../../../../shared/components/ui/button/button.
 })
 export class ShippingCountryModalComponent {
 
-  countries$: Observable<Select2Data> = inject(Store).select(CountryState.countries) as Observable<Select2Data>;
+  countryState$: Observable<{ data: any[] }> = inject(Store).select(CountryState.country) as Observable<{ data: any[] }>;
   shipping$: Observable<ShippingModel> = inject(Store).select(ShippingState.shipping) as Observable<ShippingModel>;
 
   public closeResult: string;
@@ -29,6 +29,8 @@ export class ShippingCountryModalComponent {
   public form: FormGroup;
   public data: Shipping | null;
   public countries: Select2Data = [];
+
+  private readonly allowedCountryCodes: string[] = ['CO'];
 
   @ViewChild("countryShippingModal", { static: false }) CountryShippingModal: TemplateRef<string>;
 
@@ -41,8 +43,12 @@ export class ShippingCountryModalComponent {
     });
 
     this.shipping$.subscribe(shipping => {
-      this.countries$.subscribe(countries => {
-        this.countries = countries.filter((country: any) => !shipping.data.map(shipping => Number(shipping.country_id)).includes(Number(country.value)))
+      this.countryState$.subscribe(country => {
+        const usedCountryIds = shipping.data.map(item => Number(item.country_id));
+        this.countries = (country?.data ?? [])
+          .filter((cn: any) => this.allowedCountryCodes.includes(cn?.iso_3166_2))
+          .filter((cn: any) => !usedCountryIds.includes(Number(cn?.id)))
+          .map((cn: any) => ({ label: cn?.name, value: cn?.id }));
       })
     });
   }

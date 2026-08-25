@@ -24,16 +24,7 @@
 <section class="dashboard-tiles ">
   <div class="container-fluid">
     <div class="row">
-      <div class="col-md-4 welcome-tiles">
-        <div class="card">
-          <img src="assets/images/bg.jpg" class="img-fluid">
-          <div class="card-body">
-              <h2>Welcome Back Admin </h2>
-              <p>Manage application's data and operations with real time analystics, user management tools and customizable reports.</p>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-8">
+      <div class="col-md-12">
         <div class="card">
           <div class="card-body">
             <div class="title-header">
@@ -42,7 +33,7 @@
               </div>
               <div button>
                 @if(isBrowser) {
-                  <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [placeholder]="'filter_by' | translate" (update)="filterOrder($event)">
+                  <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [value]="dashboardFilterBy" [placeholder]="'filter_by' | translate" (update)="filterOrder($event)">
                   </select2>
                 }
               </div>
@@ -162,17 +153,6 @@
             </a>
           </div>
           <div class="widget-card-box">
-            <a [routerLink]="['/store']" class="widget-card card">
-              <div class="widget-icon">
-                <img src="assets/images/svg/shop-white.svg" class="img-fluid" alt="shop-white">
-              </div>
-              <div>
-                <h6>{{ 'total_stores' | translate }}</h6>
-                <h2>{{ (statistics$ | async)?.total_stores }}</h2>
-              </div>
-            </a>
-          </div>
-          <div class="widget-card-box">
             <a [routerLink]="['/user']" class="widget-card card">
               <div class="widget-icon">
                 <img src="assets/images/svg/people.svg" class="img-fluid" alt="people">
@@ -244,22 +224,38 @@
         ? 'col-xl-12 col-md-6 p-0'
         : 'col-xl-7 col-md-6 p-0'
     ">
-      <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'Average Revenue'">
-        <div #chart></div>
+      <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'average_revenue' | translate">
+        <div button>
+          <div class="dashboard-actions">
+            @if(isBrowser) {
+              <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [value]="dashboardFilterBy" [placeholder]="'filter_by' | translate" (update)="filterOrder($event)">
+              </select2>
+            }
+            <button type="button" class="btn btn-sm btn-theme" (click)="downloadDashboardSalesReport()">
+              {{ 'download_report' | translate }}
+            </button>
+          </div>
+        </div>
+        <div #chart class="dashboard-revenue-chart"></div>
       </app-page-wrapper>
     </div>
 
     @if((user$ | async)?.role?.name !== 'vendor'){
-      <div class="col-xl-5 col-md-6 p-0" *hasPermission="'store.index'">
-        <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'top_stores'">
-          <div button>
-            @if(isBrowser) {
-              <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [placeholder]="'filter_by' | translate" (update)="filterSeller($event)">
-              </select2>
+      <div class="col-xl-5 col-md-6 p-0" *hasPermission="'product.index'">
+        <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'dashboard_sales_indicators' | translate">
+          <div class="dashboard-kpi-grid">
+            @for(kpi of salesKpiCards; track kpi.labelKey) {
+              <div class="dashboard-kpi-card">
+                <span class="dashboard-kpi-label">{{ kpi.labelKey | translate }}</span>
+                <span class="dashboard-kpi-value">{{ kpi.value }}</span>
+              </div>
+            }
+            @if(!salesKpiCards.length) {
+              <div class="dashboard-kpi-empty">
+                {{ 'dashboard_kpi_empty' | translate }}
+              </div>
             }
           </div>
-          <app-table [tableConfig]="sellerTableConfig" (tableChanged)="onSellerTableChange($event)" [pagination]="false" [topbar]="false" [loading]="topSellerLoader" [hasCheckbox]="false">
-          </app-table>
         </app-page-wrapper>
       </div>
     }
@@ -286,50 +282,11 @@
       </app-page-wrapper>
     </div>
     <div class="overflow-hidden col-md-6 p-0">
-      <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'latest_reviews'" *hasPermission="'review.index'">
-        <div button>
-          <a [routerLink]="['/review']" class="txt-primary">{{
-          "view_all" | translate
-        }}</a>
-        </div>
-        <div class="review-box table-responsive">
-          <table>
-            @for(review of (review$ | async)?.data | slice : 0 : 4; track review.id){
-              <tr>
-                <td>
-                  <div class="review-content">
-                    <div class="img-box">
-                      <img [src]="
-                        review?.product?.product_thumbnail
-                          ? review?.product?.product_thumbnail?.original_url
-                          : 'assets/images/product.png'
-                      " class="img-fluid" [alt]="'review'" />
-                    </div>
-                    <span>{{ review?.product?.name }}</span>
-                  </div>
-                </td>
-                <td>
-                  {{ review?.consumer?.name }}
-                </td>
-                <td>
-                  <ngb-rating class="rating-sec" [rate]="review?.rating"></ngb-rating>
-                </td>
-              </tr>
-            }
-          </table>
-
-          @if(!(review$ | async)?.data?.length){
-            <div class="no-data-added">
-              <h4>{{ "no_records_found" | translate }}</h4>
-            </div>
-          }
-        </div>
-      </app-page-wrapper>
       <div *hasPermission="'product.index'">
         <app-page-wrapper [gridClass]="'col-sm-12'" [title]="'top_selling_products'">
           <div button>
             @if(isBrowser) {
-              <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [placeholder]="'filter_by' | translate" (update)="filterTopProduct($event)">
+              <select2 class="custom-select min-w-cls" [data]="filter?.length ? filter : []" [value]="dashboardFilterBy" [placeholder]="'filter_by' | translate" (update)="filterOrder($event)">
               </select2>
             }
           </div>
@@ -370,7 +327,7 @@
                   </td>
                   <td>
                     <h6>{{ "amount" | translate }}</h6>
-                    <h5>{{ +product?.order_amount | currencySymbol }}</h5>
+                    <h5>{{ product?.order_amount | currencySymbol }}</h5>
                   </td>
                 </tr>
               }

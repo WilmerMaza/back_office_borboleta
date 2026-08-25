@@ -238,18 +238,18 @@ export const menu: Sidebar[] = [
     //   level: 1,
     //   permission: ["point.index"]
     // },
-    {
-      id: 15,
-      title: "refund",
-      path: "/refund",
-      active: false,
-      icon: "ri-exchange-dollar-line",
-      type: "sub",
-      badgeType: 'badge bg-danger ml-3', 
-      badgeValue: 0,
-      level: 1,
-      permission: ["refund.index"]
-    },
+    // {
+    //   id: 15,
+    //   title: "refund",
+    //   path: "/refund",
+    //   active: false,
+    //   icon: "ri-exchange-dollar-line",
+    //   type: "sub",
+    //   badgeType: 'badge bg-danger ml-3',
+    //   badgeValue: 0,
+    //   level: 1,
+    //   permission: ["refund.index"]
+    // },
     // {
     //   id: 16,
     //   title: "reviews",
@@ -301,7 +301,7 @@ export const menu: Sidebar[] = [
       children: [
         {
           parent_id: 20,
-          title: "themes",
+          title: "client_view",
           path: "/theme",
           type: "link",
           level: 2,
@@ -309,7 +309,7 @@ export const menu: Sidebar[] = [
         },
         {
           parent_id: 20,
-          title: "theme options",
+          title: "configuraciones",
           path: "/theme-option",
           type: "link",
           level: 2,

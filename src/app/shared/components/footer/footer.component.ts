@@ -4,10 +4,11 @@ import { SettingState } from '../../store/state/setting.state';
 import { Observable } from 'rxjs';
 import { Values } from '../../interface/setting.interface';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-footer',
-    imports: [CommonModule],
+    imports: [CommonModule, TranslateModule],
     templateUrl: './footer.component.html',
     styleUrl: './footer.component.scss'
 })

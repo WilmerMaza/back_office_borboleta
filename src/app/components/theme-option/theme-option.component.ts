@@ -68,7 +68,6 @@ export class ThemeOptionComponent {
   public usefulLinks: number[] = [];
   public helpCenterIds: number[] = [];
   public editor: Editor;
-  public html = '';
   public mediaConfig = media.mediaConfig;
   public isBrowser: boolean;
 
@@ -121,8 +120,8 @@ export class ThemeOptionComponent {
         cart_style: new FormControl('cart_sidebar'),
         back_to_top_enable: new FormControl(false),
         language_direction: new FormControl('rtl'),
-        primary_color: new FormControl(''),
-        secondary_color: new FormControl(''),
+        primary_color: new FormControl('#000000'),
+        secondary_color: new FormControl('#000000'),
         mode: new FormControl('light'),
         celebration_effect: new FormControl(true),
         seller_register_url: new FormControl(),
@@ -148,7 +147,7 @@ export class ThemeOptionComponent {
       footer: new FormGroup({
         footer_style: new FormControl('footer_one'),
         bg_image: new FormControl(''),
-        bg_color: new FormControl(''),
+        bg_color: new FormControl('#ffffff'),
         title: new FormControl(''),
         sub_title: new FormControl(''),
         footer_copyright: new FormControl(true),
@@ -404,8 +403,8 @@ export class ThemeOptionComponent {
           cart_style: option?.general?.cart_style,
           back_to_top_enable: option?.general?.back_to_top_enable,
           language_direction: option?.general?.language_direction,
-          primary_color: option?.general?.primary_color,
-          secondary_color: option?.general?.secondary_color,
+          primary_color: this.toHex(option?.general?.primary_color, '#000000'),
+          secondary_color: this.toHex(option?.general?.secondary_color, '#000000'),
           mode: option?.general?.mode,
           seller_register_url: option?.general?.seller_register_url,
           exit_tagline_enable: option?.general?.exit_tagline_enable,
@@ -435,7 +434,7 @@ export class ThemeOptionComponent {
         footer: {
           footer_style: option?.footer?.footer_style,
           bg_image: option?.footer?.bg_image,
-          bg_color: option?.footer?.bg_color,
+          bg_color: this.toHex(option?.footer?.bg_color, '#ffffff'),
           title: option?.footer?.title,
           sub_title: option?.footer?.sub_title,
           footer_copyright: option?.footer?.footer_copyright,
@@ -848,6 +847,10 @@ export class ThemeOptionComponent {
     if(Array.isArray(data)) {
       this.form.get(key)?.setValue(data);
     }
+  }
+
+  private toHex(value: unknown, fallback: string): string {
+    return typeof value === 'string' && /^#([0-9a-fA-F]{6})$/.test(value) ? value : fallback;
   }
 
   submit() {
